@@ -83,28 +83,18 @@ class LectureAttendanceExport implements FromArray, WithStyles, WithTitle, WithC
     public function array(): array
     {
         $lecture = $this->lecture;
-
-        $startTime = $lecture->start_time
-            ? \Carbon\Carbon::parse($lecture->start_time)
-            : null;
-
         $studyTypeAr = $lecture->group?->study_type === 'morning' ? 'صباحي' : 'مسائي';
-        $statusAr = $lecture->status === 'active' ? 'نشطة' : 'مغلقة';
-
-        // === Info Header Block ===
+        
         $rows = [
-            ['كشف الحضور والغياب', '', '', '', '', ''],
-            [''],
-            ['اسم المحاضرة:', $lecture->title, '', 'الأستاذ:', $lecture->teacher?->full_name ?? '—', ''],
-            ['المادة الدراسية:', $lecture->subject?->name . ' (' . $lecture->subject?->code . ')', '', 'المجموعة:', $lecture->group?->name . ' — ' . $studyTypeAr, ''],
-            ['المرحلة:', $lecture->group?->stage?->name ?? '—', '', 'نوع المحاضرة:', "حالة المحاضرة: {$statusAr}", ''],
-            ['التاريخ:', $startTime ? $startTime->format('Y-m-d') : '—', '', 'وقت البدء:', $startTime ? $startTime->format('H:i') : '—', ''],
-            [''],
-            // Table headings
-            ['#', 'اسم الطالب', 'الرقم الجامعي', 'الحالة', 'طريقة التسجيل', 'وقت الدخول'],
+            ['تقرير حضور المحاضرة التفصيلي - نظام الحضور الذكي'],
+            [],
+            ['اسم المحاضرة:', $lecture->title, '', 'المادة:', $lecture->subject?->name ?? '---', ''],
+            ['المجموعة:', $lecture->group?->name ?? '---', '', 'نوع الدراسة:', $studyTypeAr, ''],
+            ['التاريخ:', $lecture->date, '', 'الوقت:', $lecture->time, ''],
+            [],
+            ['#', 'اسم الطالب', 'الرقم الجامعي', 'الحالة', 'طريقة التحضير', 'وقت المسح'],
         ];
 
-        // Student data rows
         foreach ($this->rows as $row) {
             $rows[] = [
                 $row['number'],
@@ -119,26 +109,30 @@ class LectureAttendanceExport implements FromArray, WithStyles, WithTitle, WithC
         return $rows;
     }
 
-    public function title(): string
-    {
-        return 'كشف الحضور';
-    }
-
-    public function columnWidths(): array
-    {
-        return [
-            'A' => 6,
-            'B' => 30,
-            'C' => 18,
-            'D' => 12,
-            'E' => 18,
-            'F' => 14,
-        ];
-    }
-
     public function styles(Worksheet $sheet): array
     {
-        return [];
+        $sheet->mergeCells('A1:F1');
+        $sheet->mergeCells('B3:C3');
+        $sheet->mergeCells('E3:F3');
+        $sheet->mergeCells('B4:C4');
+        $sheet->mergeCells('E4:F4');
+        $sheet->mergeCells('B5:C5');
+        $sheet->mergeCells('E5:F5');
+
+        return [
+            1 => [
+                'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => '0D9488']],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+            ],
+            7 => [
+                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '0D9488']],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+            ],
+            'A:F' => [
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+            ],
+        ];
     }
 
     public function registerEvents(): array
@@ -146,164 +140,27 @@ class LectureAttendanceExport implements FromArray, WithStyles, WithTitle, WithC
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
-                $totalStudents = count($this->rows);
-                $lastRow = $this->headerRows + 1 + $totalStudents; // +1 for header row
-
-                // === RTL direction ===
                 $sheet->setRightToLeft(true);
-
-                // === Main Title Row 1 ===
-                $sheet->mergeCells('A1:F1');
-                $sheet->setCellValue('A1', 'كشف الحضور والغياب');
-                $sheet->getStyle('A1')->applyFromArray([
-                    'font' => [
-                        'bold' => true,
-                        'size' => 16,
-                        'color' => ['argb' => 'FFFFFFFF'],
-                        'name' => 'Arial',
-                    ],
-                    'fill' => [
-                        'fillType' => Fill::FILL_SOLID,
-                        'startColor' => ['argb' => 'FF0D9488'], // teal-600
-                    ],
-                    'alignment' => [
-                        'horizontal' => Alignment::HORIZONTAL_CENTER,
-                        'vertical'   => Alignment::VERTICAL_CENTER,
-                    ],
-                ]);
-                $sheet->getRowDimension(1)->setRowHeight(35);
-
-                // === Empty row 2 ===
-                $sheet->getRowDimension(2)->setRowHeight(5);
-
-                // === Info rows (3-6) ===
-                $infoLabelStyle = [
-                    'font' => ['bold' => true, 'size' => 10, 'color' => ['argb' => 'FF0F766E']],
-                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFF0FDFA']],
-                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_RIGHT, 'vertical' => Alignment::VERTICAL_CENTER],
-                ];
-                $infoValueStyle = [
-                    'font' => ['bold' => false, 'size' => 10],
-                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_RIGHT, 'vertical' => Alignment::VERTICAL_CENTER],
-                ];
-
-                foreach ([3, 4, 5, 6] as $row) {
-                    $sheet->getStyle("A{$row}")->applyFromArray($infoLabelStyle);
-                    $sheet->getStyle("B{$row}")->applyFromArray($infoValueStyle);
-                    $sheet->getStyle("D{$row}")->applyFromArray($infoLabelStyle);
-                    $sheet->getStyle("E{$row}")->applyFromArray($infoValueStyle);
-                    $sheet->getRowDimension($row)->setRowHeight(20);
-                    $sheet->mergeCells("B{$row}:C{$row}");
-                    $sheet->mergeCells("E{$row}:F{$row}");
-                }
-
-                // === Empty separator row 7 ===
-                $sheet->getRowDimension(7)->setRowHeight(5);
-
-                // === Table Header Row 8 ===
-                $headerRow = $this->headerRows + 1;
-                $sheet->getStyle("A{$headerRow}:F{$headerRow}")->applyFromArray([
-                    'font' => [
-                        'bold' => true,
-                        'size' => 11,
-                        'color' => ['argb' => 'FFFFFFFF'],
-                    ],
-                    'fill' => [
-                        'fillType' => Fill::FILL_SOLID,
-                        'startColor' => ['argb' => 'FF0D9488'], // teal-600
-                    ],
-                    'alignment' => [
-                        'horizontal' => Alignment::HORIZONTAL_CENTER,
-                        'vertical'   => Alignment::VERTICAL_CENTER,
-                    ],
-                    'borders' => [
-                        'allBorders' => [
-                            'borderStyle' => Border::BORDER_THIN,
-                            'color' => ['argb' => 'FF0F766E'],
-                        ],
-                    ],
-                ]);
-                $sheet->getRowDimension($headerRow)->setRowHeight(24);
-
-                // === Student Data Rows ===
-                $dataStartRow = $headerRow + 1;
-                for ($i = 0; $i < $totalStudents; $i++) {
-                    $row = $dataStartRow + $i;
-                    $studentData = $this->rows[$i];
-                    $isPresent = $studentData['status'] === 'حاضر';
-                    $isEven = ($i % 2 === 0);
-
-                    // Background: alternating rows
-                    $bgColor = $isEven ? 'FFF9FAFB' : 'FFFFFFFF';
-
-                    $sheet->getStyle("A{$row}:F{$row}")->applyFromArray([
-                        'font' => ['size' => 10],
-                        'fill' => [
-                            'fillType' => Fill::FILL_SOLID,
-                            'startColor' => ['argb' => $bgColor],
-                        ],
-                        'alignment' => [
-                            'horizontal' => Alignment::HORIZONTAL_CENTER,
-                            'vertical'   => Alignment::VERTICAL_CENTER,
-                        ],
-                        'borders' => [
-                            'allBorders' => [
-                                'borderStyle' => Border::BORDER_THIN,
-                                'color' => ['argb' => 'FFE5E7EB'],
-                            ],
-                        ],
-                    ]);
-
-                    // Status cell color
-                    $statusCell = "D{$row}";
-                    if ($isPresent) {
-                        $sheet->getStyle($statusCell)->applyFromArray([
-                            'font' => ['bold' => true, 'color' => ['argb' => 'FF065F46']],
-                            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFD1FAE5']],
-                        ]);
-                    } else {
-                        $sheet->getStyle($statusCell)->applyFromArray([
-                            'font' => ['bold' => true, 'color' => ['argb' => 'FF991B1B']],
-                            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFFEE2E2']],
-                        ]);
+                
+                $sheet->getRowDimension(1)->setRowHeight(40);
+                $sheet->getRowDimension(7)->setRowHeight(30);
+                
+                $highestRow = $sheet->getHighestRow();
+                for ($row = 8; $row <= $highestRow; $row++) {
+                    $sheet->getRowDimension($row)->setRowHeight(25);
+                    
+                    $statusValue = $sheet->getCell('D' . $row)->getValue();
+                    if ($statusValue === 'حاضر') {
+                        $sheet->getStyle('D' . $row)->getFont()->getColor()->setRGB('059669');
+                        $sheet->getStyle('D' . $row)->getFont()->setBold(true);
+                    } elseif ($statusValue === 'غائب') {
+                        $sheet->getStyle('D' . $row)->getFont()->getColor()->setRGB('DC2626');
+                        $sheet->getStyle('D' . $row)->getFont()->setBold(true);
                     }
-
-                    // Name column left-aligned
-                    $sheet->getStyle("B{$row}")->getAlignment()
-                        ->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-
-                    $sheet->getRowDimension($row)->setRowHeight(19);
                 }
 
-                // === Summary Footer ===
-                $footerRow = $lastRow + 1;
-                $presentCount = collect($this->rows)->where('status', 'حاضر')->count();
-                $absentCount = count($this->rows) - $presentCount;
-
-                $sheet->mergeCells("A{$footerRow}:B{$footerRow}");
-                $sheet->setCellValue("A{$footerRow}", "إجمالي: " . count($this->rows) . " طالب");
-                $sheet->mergeCells("C{$footerRow}:D{$footerRow}");
-                $sheet->setCellValue("C{$footerRow}", "حاضر: {$presentCount}");
-                $sheet->mergeCells("E{$footerRow}:F{$footerRow}");
-                $sheet->setCellValue("E{$footerRow}", "غائب: {$absentCount}");
-
-                $sheet->getStyle("A{$footerRow}:F{$footerRow}")->applyFromArray([
-                    'font' => ['bold' => true, 'size' => 10, 'color' => ['argb' => 'FF0F766E']],
-                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFCCFBF1']],
-                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
-                    'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['argb' => 'FF0D9488']]],
-                ]);
-                $sheet->getRowDimension($footerRow)->setRowHeight(22);
-
-                // Outline border around entire data table
-                $sheet->getStyle("A{$headerRow}:F{$lastRow}")->applyFromArray([
-                    'borders' => [
-                        'outline' => [
-                            'borderStyle' => Border::BORDER_MEDIUM,
-                            'color' => ['argb' => 'FF0D9488'],
-                        ],
-                    ],
-                ]);
+                $sheet->getStyle('A7:F' . $highestRow)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                $sheet->getStyle('A7:F' . $highestRow)->getBorders()->getOutline()->setBorderStyle(Border::BORDER_MEDIUM);
             },
         ];
     }
