@@ -63,24 +63,28 @@ const stopScanner = async () => {
     }
 };
 
-const playBeep = () => {
+const playSound = (type: 'success' | 'error') => {
     try {
-        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-        const oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        
-        oscillator.type = 'sine';
-        oscillator.frequency.value = 800; // High pitch beep
-        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); // Low volume
-        
-        oscillator.start();
-        setTimeout(() => oscillator.stop(), 100);
+        const audio = new Audio(`/${type}.mp3`);
+        audio.play().catch(e => console.log('Audio play prevented', e));
     } catch (e) {
         console.log("Audio not supported or blocked");
     }
+};
+
+// Fast-disappearing toast notification state
+const toastMessage = ref('');
+const showToast = ref(false);
+let toastTimeout: any = null;
+
+const displayToast = (message: string, isError: boolean = false) => {
+    toastMessage.value = message;
+    showToast.value = true;
+    
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => {
+        showToast.value = false;
+    }, 1500); // Disappears very quickly (1.5 seconds)
 };
 
 const onScanSuccess = async (decodedText: string, decodedResult: any) => {
@@ -115,15 +119,19 @@ const onScanSuccess = async (decodedText: string, decodedResult: any) => {
                 totalScanned.value++;
             }
             
-            playBeep(); // Audio feedback for success
+            playSound('success');
+            displayToast(`✅ تم تسجيل حضور: ${response.data.student.name}`);
         }
     } catch (error: any) {
         if (error.response && error.response.status === 400 && error.response.data.message.includes('مسبقاً')) {
             scannerStatus.value = 'duplicate';
             lastScanMessage.value = error.response.data.message;
+            displayToast(`⚠️ مسجل مسبقاً!`, true);
         } else {
             scannerStatus.value = 'error';
             lastScanMessage.value = error.response?.data?.message || 'لقد حدث خطأ أثناء فحص الرمز.';
+            playSound('error');
+            displayToast(`❌ حدث خطأ في التسجيل`, true);
         }
     }
 
@@ -204,6 +212,17 @@ onUnmounted(() => {
                         
                         <!-- Overlay when scanning -->
                         <div v-if="scannerStatus === 'scanning'" class="absolute inset-0 border-[6px] border-indigo-500/50 rounded-xl pointer-events-none animate-pulse"></div>
+                        
+                        <!-- Fast Toast Notification Overlay -->
+                        <transition name="toast-slide">
+                            <div v-if="showToast" class="absolute top-4 inset-x-4 flex justify-center pointer-events-none z-50">
+                                <div class="bg-white/95 backdrop-blur shadow-2xl rounded-2xl px-6 py-4 flex items-center border-b-4" :class="scannerStatus === 'success' ? 'border-emerald-500 border-l-emerald-500' : 'border-rose-500'">
+                                    <span class="text-lg font-black tracking-tight" :class="scannerStatus === 'success' ? 'text-emerald-700' : 'text-rose-700'">
+                                        {{ toastMessage }}
+                                    </span>
+                                </div>
+                            </div>
+                        </transition>
                     </div>
 
                     <!-- Status Display -->
@@ -308,5 +327,18 @@ onUnmounted(() => {
 .fade-leave-to {
   opacity: 0;
   transform: scale(0.98);
+}
+
+.toast-slide-enter-active,
+.toast-slide-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.toast-slide-enter-from {
+  opacity: 0;
+  transform: translateY(-20px) scale(0.95);
+}
+.toast-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.95);
 }
 </style>
