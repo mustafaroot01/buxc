@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import { BookOpenIcon, SaveIcon, ArrowRightIcon } from 'lucide-vue-next';
+import { BookOpenIcon, SaveIcon, ArrowRightIcon, Trash2Icon, AlertTriangleIcon } from 'lucide-vue-next';
+import Modal from '@/Components/Modal.vue';
+import DangerButton from '@/Components/DangerButton.vue';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
+import { ref } from 'vue';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
 
 const props = defineProps<{
     subject: {
@@ -36,6 +40,23 @@ const availableGroups = computed(() => {
 
 const submit = () => {
     form.put(route('admin.subjects.update', props.subject.id));
+};
+
+const confirmingSubjectDeletion = ref(false);
+
+const deleteSubject = () => {
+    confirmingSubjectDeletion.value = true;
+};
+
+const closeModal = () => {
+    confirmingSubjectDeletion.value = false;
+};
+
+const confirmDeleteSubject = () => {
+    router.delete(route('admin.subjects.destroy', props.subject.id), {
+        onSuccess: () => closeModal(),
+        onFinish: () => closeModal(),
+    });
 };
 </script>
 
@@ -100,16 +121,60 @@ const submit = () => {
                                 </select>
                                 <p v-if="form.errors.teacher_id" class="mt-2 text-sm text-red-600">{{ form.errors.teacher_id }}</p>
                             </div>
-                            <div class="flex items-center justify-end pt-4 border-t border-gray-100">
-                                <Link :href="route('admin.subjects.index')" class="px-5 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 transition-all ml-3">إلغاء</Link>
-                                <button type="submit" :disabled="form.processing" class="inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-teal-600 to-emerald-500 rounded-lg shadow-lg hover:from-teal-700 hover:to-emerald-600 transition-all disabled:opacity-50">
-                                    <SaveIcon class="w-5 h-5 ml-2" /> حفظ التعديلات
+                            <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                                <button
+                                    type="button"
+                                    @click="deleteSubject"
+                                    class="inline-flex items-center px-4 py-2 text-sm font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-all duration-200"
+                                >
+                                    <Trash2Icon class="w-4 h-4 ml-2" />
+                                    حذف المادة
                                 </button>
+                                
+                                <div class="flex items-center">
+                                    <Link :href="route('admin.subjects.index')" class="px-5 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 transition-all ml-3">إلغاء</Link>
+                                    <button type="submit" :disabled="form.processing" class="inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-teal-600 to-emerald-500 rounded-lg shadow-lg hover:from-teal-700 hover:to-emerald-600 transition-all disabled:opacity-50">
+                                        <SaveIcon class="w-5 h-5 ml-2" /> حفظ التعديلات
+                                    </button>
+                                </div>
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Subject Deletion Confirmation Modal -->
+        <Modal :show="confirmingSubjectDeletion" @close="closeModal" maxWidth="md">
+            <div class="p-8">
+                <div class="flex items-center justify-center w-16 h-16 mx-auto mb-6 bg-red-50 rounded-full">
+                    <AlertTriangleIcon class="w-8 h-8 text-red-600 animate-bounce" />
+                </div>
+                
+                <h3 class="text-xl font-black text-center text-gray-900 mb-2">
+                    تأكيد حذف المادة الدراسية
+                </h3>
+                
+                <p class="text-center text-gray-500 text-sm leading-relaxed mb-8">
+                    هل أنت متأكد من رغبتك في حذف المادة <span class="font-bold text-gray-900">{{ subject.name }}</span>؟ سيؤدي هذا إلى إزالتها من سجلات المراحل والمجموعات المرتبطة بشكل نهائي.
+                </p>
+
+                <div class="flex items-center gap-3">
+                    <DangerButton 
+                        class="flex-1 justify-center py-3 rounded-xl font-bold"
+                        @click="confirmDeleteSubject"
+                    >
+                        تأكيد الحذف
+                    </DangerButton>
+                    
+                    <SecondaryButton 
+                        class="flex-1 justify-center py-3 rounded-xl font-bold border-gray-200"
+                        @click="closeModal"
+                    >
+                        إلغاء الأمر
+                    </SecondaryButton>
+                </div>
+            </div>
+        </Modal>
     </AuthenticatedLayout>
 </template>

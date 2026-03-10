@@ -143,6 +143,10 @@ class StudentController extends Controller
             'attendances' => $attendances,
         ]);
     }
+
+    public function destroy(Student $student)
+    {
+        $student->delete();
+        return redirect()->route('admin.students.index')->with('success', 'تم نقل الطالب إلى الأرشيف بنجاح.');
+    }
 }
-
-

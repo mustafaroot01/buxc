@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { PlusIcon, SearchIcon, UsersIcon, Trash2Icon, PencilIcon } from 'lucide-vue-next';
+import { PlusIcon, SearchIcon, UsersIcon, Trash2Icon, PencilIcon, AlertTriangleIcon } from 'lucide-vue-next';
+import Modal from '@/Components/Modal.vue';
+import DangerButton from '@/Components/DangerButton.vue';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
+import { ref } from 'vue';
 import Pagination from '@/Components/Pagination.vue';
 
 defineProps<{
@@ -9,9 +13,25 @@ defineProps<{
     filters: { search?: string };
 }>();
 
-const deleteTeacher = (id: string) => {
-    if (confirm('هل أنت متأكد من حذف هذا الأستاذ؟')) {
-        router.delete(route('admin.teachers.destroy', id));
+const confirmingTeacherDeletion = ref(false);
+const teacherToEdit = ref<any>(null);
+
+const deleteTeacher = (teacher: any) => {
+    teacherToEdit.value = teacher;
+    confirmingTeacherDeletion.value = true;
+};
+
+const closeModal = () => {
+    confirmingTeacherDeletion.value = false;
+    teacherToEdit.value = null;
+};
+
+const confirmDeleteTeacher = () => {
+    if (teacherToEdit.value) {
+        router.delete(route('admin.teachers.destroy', teacherToEdit.value.id), {
+            onSuccess: () => closeModal(),
+            onFinish: () => closeModal(),
+        });
     }
 };
 </script>
@@ -64,7 +84,7 @@ const deleteTeacher = (id: string) => {
                             <tbody class="bg-white divide-y divide-gray-50">
                                 <tr v-for="(teacher, index) in teachers.data" :key="teacher.id" class="hover:bg-slate-50 transition-colors">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-500 text-center">
-                                        {{ (Number(teachers.current_page) - 1) * Number(teachers.per_page) + index + 1 }}
+                                        {{ (Number(teachers.current_page) - 1) * Number(teachers.per_page) + Number(index) + 1 }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
@@ -92,7 +112,7 @@ const deleteTeacher = (id: string) => {
                                             <Link :href="route('admin.teachers.edit', teacher.id)" class="p-2 text-teal-600 bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors" title="تعديل">
                                                 <PencilIcon class="w-4 h-4" />
                                             </Link>
-                                            <button @click="deleteTeacher(teacher.id)" class="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" title="حذف">
+                                            <button @click="deleteTeacher(teacher)" class="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" title="حذف">
                                                 <Trash2Icon class="w-4 h-4" />
                                             </button>
                                         </div>
@@ -115,5 +135,38 @@ const deleteTeacher = (id: string) => {
                 </div>
             </div>
         </div>
+
+        <!-- Teacher Deletion Confirmation Modal -->
+        <Modal :show="confirmingTeacherDeletion" @close="closeModal" maxWidth="md">
+            <div class="p-8">
+                <div class="flex items-center justify-center w-16 h-16 mx-auto mb-6 bg-red-50 rounded-full">
+                    <AlertTriangleIcon class="w-8 h-8 text-red-600 animate-bounce" />
+                </div>
+                
+                <h3 class="text-xl font-black text-center text-gray-900 mb-2">
+                    تأكيد حذف الأستاذ
+                </h3>
+                
+                <p class="text-center text-gray-500 text-sm leading-relaxed mb-8">
+                    هل أنت متأكد من رغبتك في حذف الأستاذ <span class="font-bold text-gray-900">{{ teacherToEdit?.full_name }}</span>؟ سيتم إزالة حسابه من النظام بشكل نهائي.
+                </p>
+
+                <div class="flex items-center gap-3">
+                    <DangerButton 
+                        class="flex-1 justify-center py-3 rounded-xl font-bold"
+                        @click="confirmDeleteTeacher"
+                    >
+                        تأكيد الحذف
+                    </DangerButton>
+                    
+                    <SecondaryButton 
+                        class="flex-1 justify-center py-3 rounded-xl font-bold border-gray-200"
+                        @click="closeModal"
+                    >
+                        إلغاء الأمر
+                    </SecondaryButton>
+                </div>
+            </div>
+        </Modal>
     </AuthenticatedLayout>
 </template>

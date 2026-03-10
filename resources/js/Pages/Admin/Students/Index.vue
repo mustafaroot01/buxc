@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { PlusIcon, SearchIcon, QrCodeIcon } from 'lucide-vue-next';
+import { PlusIcon, SearchIcon, QrCodeIcon, Trash2Icon, AlertTriangleIcon } from 'lucide-vue-next';
+import Modal from '@/Components/Modal.vue';
+import DangerButton from '@/Components/DangerButton.vue';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
 import QRCodeVue3 from 'qrcode-vue3';
 import { ref, watch, computed } from 'vue';
 
@@ -97,6 +100,28 @@ const downloadQrCode = (studentId: string, studentName: string) => {
         }
         downloadingQrFor.value = null;
     }, 100);
+};
+
+const confirmingStudentDeletion = ref(false);
+const studentIdToDelete = ref<string | null>(null);
+
+const deleteStudent = (id: string) => {
+    studentIdToDelete.value = id;
+    confirmingStudentDeletion.value = true;
+};
+
+const closeModal = () => {
+    confirmingStudentDeletion.value = false;
+    studentIdToDelete.value = null;
+};
+
+const confirmDeleteStudent = () => {
+    if (studentIdToDelete.value) {
+        router.delete(route('admin.students.destroy', studentIdToDelete.value), {
+            onSuccess: () => closeModal(),
+            onFinish: () => closeModal(),
+        });
+    }
 };
 
 </script>
@@ -224,6 +249,9 @@ const downloadQrCode = (studentId: string, studentName: string) => {
                                             <button @click="downloadQrCode(student.id, `${student.first_name}_${student.last_name}`)" class="flex items-center justify-center p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors" title="تنزيل رمز QR">
                                                 <QrCodeIcon class="w-4 h-4" :class="{'animate-pulse': downloadingQrFor === student.id}" /> 
                                             </button>
+                                            <button @click="deleteStudent(student.id)" class="flex items-center justify-center p-2 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors" title="حذف الطالب">
+                                                <Trash2Icon class="w-4 h-4" />
+                                            </button>
                                             
                                             <!-- Hidden QR Code for downloading -->
                                             <div v-if="downloadingQrFor === student.id" :id="`qr-container-${student.id}`" class="hidden">
@@ -257,5 +285,38 @@ const downloadQrCode = (studentId: string, studentName: string) => {
                 </div>
             </div>
         </div>
+
+        <!-- Deletion Confirmation Modal -->
+        <Modal :show="confirmingStudentDeletion" @close="closeModal" maxWidth="md">
+            <div class="p-8">
+                <div class="flex items-center justify-center w-16 h-16 mx-auto mb-6 bg-red-50 rounded-full">
+                    <AlertTriangleIcon class="w-8 h-8 text-red-600 animate-bounce" />
+                </div>
+                
+                <h3 class="text-xl font-black text-center text-gray-900 mb-2">
+                    تأكيد نقل الطالب للأرشيف
+                </h3>
+                
+                <p class="text-center text-gray-500 text-sm leading-relaxed mb-8">
+                    هل أنت متأكد من رغبتك في حذف هذا الطالب؟ سيتم نقله إلى "مركز إدارة الأرشيف" ويمكنك استعادته لاحقاً إذا دعت الحاجة.
+                </p>
+
+                <div class="flex items-center gap-3">
+                    <DangerButton 
+                        class="flex-1 justify-center py-3 rounded-xl font-bold"
+                        @click="confirmDeleteStudent"
+                    >
+                        حذف ونقل للأرشيف
+                    </DangerButton>
+                    
+                    <SecondaryButton 
+                        class="flex-1 justify-center py-3 rounded-xl font-bold border-gray-200"
+                        @click="closeModal"
+                    >
+                        إلغاء الأمر
+                    </SecondaryButton>
+                </div>
+            </div>
+        </Modal>
     </AuthenticatedLayout>
 </template>

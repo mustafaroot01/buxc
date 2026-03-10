@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
-import { ArrowRightIcon, UserIcon, MapPinIcon, ShieldAlertIcon, CheckCircle2Icon, XCircleIcon, ClockIcon, DownloadIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-vue-next';
+import { ArrowRightIcon, UserIcon, MapPinIcon, ShieldAlertIcon, CheckCircle2Icon, XCircleIcon, ClockIcon, DownloadIcon, ChevronLeftIcon, ChevronRightIcon, Trash2Icon, AlertTriangleIcon } from 'lucide-vue-next';
+import { Head, Link, router } from '@inertiajs/vue3';
+import Modal from '@/Components/Modal.vue';
+import DangerButton from '@/Components/DangerButton.vue';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
+import { ref } from 'vue';
 import QRCodeVue3 from 'qrcode-vue3';
 
 const props = defineProps<{
@@ -35,6 +39,23 @@ const props = defineProps<{
 const printQrCode = () => {
     window.print();
 };
+
+const confirmingStudentDeletion = ref(false);
+
+const deleteStudent = () => {
+    confirmingStudentDeletion.value = true;
+};
+
+const closeModal = () => {
+    confirmingStudentDeletion.value = false;
+};
+
+const confirmDeleteStudent = () => {
+    router.delete(route('admin.students.destroy', props.student.id), {
+        onSuccess: () => closeModal(),
+        onFinish: () => closeModal(),
+    });
+};
 </script>
 
 <template>
@@ -56,9 +77,13 @@ const printQrCode = () => {
                     </div>
                 </div>
                 <div class="flex justify-end pb-4">
-                    <Link :href="route('admin.students.edit', student.id)" class="inline-flex items-center px-5 py-2 text-sm font-bold text-white bg-gradient-to-r from-teal-600 to-emerald-500 rounded-lg shadow-sm hover:from-teal-700 hover:to-emerald-600 hover:shadow-md transition-all">
+                    <Link :href="route('admin.students.edit', student.id)" class="inline-flex items-center px-5 py-2 text-sm font-bold text-white bg-gradient-to-r from-amber-500 to-orange-400 rounded-lg shadow-sm hover:from-amber-600 hover:to-orange-500 hover:shadow-md transition-all ml-3">
                         تعديل البيانات
                     </Link>
+                    <button @click="deleteStudent" class="inline-flex items-center px-5 py-2 text-sm font-bold text-white bg-gradient-to-r from-rose-600 to-red-500 rounded-lg shadow-sm hover:from-rose-700 hover:to-red-600 hover:shadow-md transition-all">
+                        <Trash2Icon class="w-4 h-4 ml-2" />
+                        حذف الطالب
+                    </button>
                 </div>
             </div>
         </div>
@@ -298,6 +323,39 @@ const printQrCode = () => {
 
             </div>
         </div>
+
+        <!-- Deletion Confirmation Modal -->
+        <Modal :show="confirmingStudentDeletion" @close="closeModal" maxWidth="md">
+            <div class="p-8">
+                <div class="flex items-center justify-center w-16 h-16 mx-auto mb-6 bg-red-50 rounded-full">
+                    <AlertTriangleIcon class="w-8 h-8 text-red-600 animate-bounce" />
+                </div>
+                
+                <h3 class="text-xl font-black text-center text-gray-900 mb-2">
+                    تأكيد نقل الطالب للأرشيف
+                </h3>
+                
+                <p class="text-center text-gray-500 text-sm leading-relaxed mb-8">
+                    هل أنت متأكد من رغبتك في حذف الطالب <span class="font-bold text-gray-900">{{ student.first_name }}</span>؟ سيتم نقله إلى الأرشيف ويمكنك استعادته لاحقاً.
+                </p>
+
+                <div class="flex items-center gap-3">
+                    <DangerButton 
+                        class="flex-1 justify-center py-3 rounded-xl font-bold"
+                        @click="confirmDeleteStudent"
+                    >
+                        حذف ونقل للأرشيف
+                    </DangerButton>
+                    
+                    <SecondaryButton 
+                        class="flex-1 justify-center py-3 rounded-xl font-bold border-gray-200"
+                        @click="closeModal"
+                    >
+                        إلغاء الأمر
+                    </SecondaryButton>
+                </div>
+            </div>
+        </Modal>
     </AuthenticatedLayout>
 </template>
 

@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import { LayersIcon, SaveIcon, ArrowRightIcon } from 'lucide-vue-next';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
+import { LayersIcon, SaveIcon, ArrowRightIcon, Trash2Icon, AlertTriangleIcon } from 'lucide-vue-next';
+import Modal from '@/Components/Modal.vue';
+import DangerButton from '@/Components/DangerButton.vue';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
+import { ref } from 'vue';
 
 const props = defineProps<{
     stage: {
@@ -18,6 +22,23 @@ const form = useForm({
 
 const submit = () => {
     form.put(route('admin.stages.update', props.stage.id));
+};
+
+const confirmingStageDeletion = ref(false);
+
+const deleteStage = () => {
+    confirmingStageDeletion.value = true;
+};
+
+const closeModal = () => {
+    confirmingStageDeletion.value = false;
+};
+
+const confirmDeleteStage = () => {
+    router.delete(route('admin.stages.destroy', props.stage.id), {
+        onSuccess: () => closeModal(),
+        onFinish: () => closeModal(),
+    });
 };
 </script>
 
@@ -72,19 +93,63 @@ const submit = () => {
                             </div>
 
                             <!-- Actions -->
-                            <div class="flex items-center justify-end pt-4 border-t border-gray-100">
-                                <Link :href="route('admin.stages.index')" class="px-5 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 transition-all duration-200 ml-3">
-                                    إلغاء
-                                </Link>
-                                <button type="submit" :disabled="form.processing" class="inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 border border-transparent rounded-lg shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 disabled:opacity-50">
-                                    <SaveIcon class="w-5 h-5 ml-2" />
-                                    حفظ التعديلات
+                            <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                                <button
+                                    type="button"
+                                    @click="deleteStage"
+                                    class="inline-flex items-center px-4 py-2 text-sm font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-all duration-200"
+                                >
+                                    <Trash2Icon class="w-4 h-4 ml-2" />
+                                    حذف المرحلة
                                 </button>
+                                
+                                <div class="flex items-center">
+                                    <Link :href="route('admin.stages.index')" class="px-5 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 transition-all duration-200 ml-3">
+                                        إلغاء
+                                    </Link>
+                                    <button type="submit" :disabled="form.processing" class="inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 border border-transparent rounded-lg shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 disabled:opacity-50">
+                                        <SaveIcon class="w-5 h-5 ml-2" />
+                                        حفظ التعديلات
+                                    </button>
+                                </div>
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Stage Deletion Confirmation Modal -->
+        <Modal :show="confirmingStageDeletion" @close="closeModal" maxWidth="md">
+            <div class="p-8">
+                <div class="flex items-center justify-center w-16 h-16 mx-auto mb-6 bg-red-50 rounded-full">
+                    <AlertTriangleIcon class="w-8 h-8 text-red-600 animate-bounce" />
+                </div>
+                
+                <h3 class="text-xl font-black text-center text-gray-900 mb-2">
+                    تأكيد حذف المرحلة الدراسية
+                </h3>
+                
+                <p class="text-center text-gray-500 text-sm leading-relaxed mb-8">
+                    هل أنت متأكد من رغبتك في حذف المرحلة <span class="font-bold text-gray-900">{{ stage.name }}</span>؟ سيؤدي هذا إلى حذف جميع البيانات المرتبطة بها بشكل نهائي.
+                </p>
+
+                <div class="flex items-center gap-3">
+                    <DangerButton 
+                        class="flex-1 justify-center py-3 rounded-xl font-bold"
+                        @click="confirmDeleteStage"
+                    >
+                        تأكيد الحذف
+                    </DangerButton>
+                    
+                    <SecondaryButton 
+                        class="flex-1 justify-center py-3 rounded-xl font-bold border-gray-200"
+                        @click="closeModal"
+                    >
+                        إلغاء الأمر
+                    </SecondaryButton>
+                </div>
+            </div>
+        </Modal>
     </AuthenticatedLayout>
 </template>

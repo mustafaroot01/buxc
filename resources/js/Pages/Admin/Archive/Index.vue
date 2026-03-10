@@ -11,6 +11,9 @@ import {
     InboxIcon
 } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
+import Modal from '@/Components/Modal.vue';
+import PrimaryButton from '@/Components/PrimaryButton.vue';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
 
 const props = defineProps<{
     students: {
@@ -43,10 +46,25 @@ const filteredStudents = computed(() => {
     );
 });
 
-const restoreStudent = (id: string) => {
-    if (confirm('هل أنت متأكد من رغبتك في استعادة هذا الطالب إلى القائمة النشطة؟')) {
-        form.post(route('admin.archive.restore', id), {
+const confirmingStudentRestoration = ref(false);
+const studentToRestore = ref<any>(null);
+
+const restoreStudent = (student: any) => {
+    studentToRestore.value = student;
+    confirmingStudentRestoration.value = true;
+};
+
+const closeModal = () => {
+    confirmingStudentRestoration.value = false;
+    studentToRestore.value = null;
+};
+
+const confirmRestoreStudent = () => {
+    if (studentToRestore.value) {
+        form.post(route('admin.archive.restore', studentToRestore.value.id), {
             preserveScroll: true,
+            onSuccess: () => closeModal(),
+            onFinish: () => closeModal(),
         });
     }
 };
@@ -158,7 +176,7 @@ const formatDate = (dateString: string) => {
                                     </td>
                                     <td class="px-8 py-5 whitespace-nowrap text-left">
                                         <button 
-                                            @click="restoreStudent(student.id)" 
+                                            @click="restoreStudent(student)" 
                                             :disabled="form.processing"
                                             class="inline-flex items-center px-4 py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl text-xs font-black transition-all duration-300 shadow-sm border border-emerald-100 disabled:opacity-50"
                                         >
@@ -192,6 +210,40 @@ const formatDate = (dateString: string) => {
                 </p>
             </div>
         </div>
+
+        <!-- Restoration Confirmation Modal -->
+        <Modal :show="confirmingStudentRestoration" @close="closeModal" maxWidth="md">
+            <div class="p-8">
+                <div class="flex items-center justify-center w-16 h-16 mx-auto mb-6 bg-emerald-50 rounded-full">
+                    <RotateCcwIcon class="w-8 h-8 text-emerald-600 animate-spin-slow" />
+                </div>
+                
+                <h3 class="text-xl font-black text-center text-gray-900 mb-2">
+                    تأكيد استعادة الطالب
+                </h3>
+                
+                <p class="text-center text-gray-500 text-sm leading-relaxed mb-8">
+                    هل أنت متأكد من رغبتك في استعادة الطالب <span class="font-bold text-gray-900">{{ studentToRestore?.first_name }}</span> إلى القائمة النشطة؟ سيتمكن من تسجيل الحضور في المحاضرات القادمة.
+                </p>
+
+                <div class="flex items-center gap-3">
+                    <PrimaryButton 
+                        class="flex-1 justify-center py-3 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700 border-none"
+                        @click="confirmRestoreStudent"
+                        :disabled="form.processing"
+                    >
+                        تأكيد الاستعادة
+                    </PrimaryButton>
+                    
+                    <SecondaryButton 
+                        class="flex-1 justify-center py-3 rounded-xl font-bold border-gray-200"
+                        @click="closeModal"
+                    >
+                        إلغاء
+                    </SecondaryButton>
+                </div>
+            </div>
+        </Modal>
     </AuthenticatedLayout>
 </template>
 

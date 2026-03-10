@@ -1,13 +1,39 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
-import { PlusIcon, SearchIcon, LayersIcon } from 'lucide-vue-next';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { PlusIcon, SearchIcon, LayersIcon, Trash2Icon, AlertTriangleIcon } from 'lucide-vue-next';
+import Modal from '@/Components/Modal.vue';
+import DangerButton from '@/Components/DangerButton.vue';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
+import { ref } from 'vue';
 import Pagination from '@/Components/Pagination.vue';
 
-defineProps<{
+const props = defineProps<{
     stages: any; 
     filters: { search?: string };
 }>();
+
+const confirmingStageDeletion = ref(false);
+const stageToDelete = ref<any>(null);
+
+const deleteStage = (stage: any) => {
+    stageToDelete.value = stage;
+    confirmingStageDeletion.value = true;
+};
+
+const closeModal = () => {
+    confirmingStageDeletion.value = false;
+    stageToDelete.value = null;
+};
+
+const confirmDeleteStage = () => {
+    if (stageToDelete.value) {
+        router.delete(route('admin.stages.destroy', stageToDelete.value.id), {
+            onSuccess: () => closeModal(),
+            onFinish: () => closeModal(),
+        });
+    }
+};
 </script>
 
 <template>
@@ -76,9 +102,12 @@ defineProps<{
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
                                         <div class="flex items-center justify-end space-x-3 space-x-reverse">
-                                            <Link :href="route('admin.stages.edit', stage.id)" class="p-2 text-teal-600 bg-teal-50 hover:bg-teal-100 hover:text-indigo-900 rounded-lg transition-colors" title="تعديل">
+                                            <Link :href="route('admin.stages.edit', stage.id)" class="p-2 text-teal-600 bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors" title="تعديل">
                                                 تعديل
                                             </Link>
+                                            <button @click="deleteStage(stage)" class="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" title="حذف">
+                                                <Trash2Icon class="w-4 h-4" />
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -99,5 +128,38 @@ defineProps<{
                 </div>
             </div>
         </div>
+
+        <!-- Stage Deletion Confirmation Modal -->
+        <Modal :show="confirmingStageDeletion" @close="closeModal" maxWidth="md">
+            <div class="p-8">
+                <div class="flex items-center justify-center w-16 h-16 mx-auto mb-6 bg-red-50 rounded-full">
+                    <AlertTriangleIcon class="w-8 h-8 text-red-600 animate-bounce" />
+                </div>
+                
+                <h3 class="text-xl font-black text-center text-gray-900 mb-2">
+                    تأكيد حذف المرحلة الدراسية
+                </h3>
+                
+                <p class="text-center text-gray-500 text-sm leading-relaxed mb-8">
+                    هل أنت متأكد من رغبتك في حذف المرحلة <span class="font-bold text-gray-900">{{ stageToDelete?.name }}</span>؟ سيؤدي هذا إلى حذف جميع البيانات المرتبطة بها بشكل نهائي.
+                </p>
+
+                <div class="flex items-center gap-3">
+                    <DangerButton 
+                        class="flex-1 justify-center py-3 rounded-xl font-bold"
+                        @click="confirmDeleteStage"
+                    >
+                        تأكيد الحذف
+                    </DangerButton>
+                    
+                    <SecondaryButton 
+                        class="flex-1 justify-center py-3 rounded-xl font-bold border-gray-200"
+                        @click="closeModal"
+                    >
+                        إلغاء الأمر
+                    </SecondaryButton>
+                </div>
+            </div>
+        </Modal>
     </AuthenticatedLayout>
 </template>

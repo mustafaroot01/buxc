@@ -2,7 +2,10 @@
 import { ref } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { PlusIcon, SearchIcon, BookOpenIcon, Trash2Icon, PencilIcon, FilterIcon, ChevronDownIcon, ChevronLeftIcon } from 'lucide-vue-next';
+import { PlusIcon, SearchIcon, BookOpenIcon, Trash2Icon, PencilIcon, FilterIcon, ChevronDownIcon, ChevronLeftIcon, AlertTriangleIcon } from 'lucide-vue-next';
+import Modal from '@/Components/Modal.vue';
+import DangerButton from '@/Components/DangerButton.vue';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
 import Pagination from '@/Components/Pagination.vue';
 
 const props = defineProps<{
@@ -19,9 +22,25 @@ const applyFilters = (stageId: string = props.filters.stage_id || '') => {
   );
 };
 
-const deleteSubject = (id: string) => {
-    if (confirm('هل أنت متأكد من حذف هذه المادة الدراسية؟')) {
-        router.delete(route('admin.subjects.destroy', id));
+const confirmingSubjectDeletion = ref(false);
+const subjectToDelete = ref<any>(null);
+
+const deleteSubject = (subject: any) => {
+    subjectToDelete.value = subject;
+    confirmingSubjectDeletion.value = true;
+};
+
+const closeModal = () => {
+    confirmingSubjectDeletion.value = false;
+    subjectToDelete.value = null;
+};
+
+const confirmDeleteSubject = () => {
+    if (subjectToDelete.value) {
+        router.delete(route('admin.subjects.destroy', subjectToDelete.value.id), {
+            onSuccess: () => closeModal(),
+            onFinish: () => closeModal(),
+        });
     }
 };
 
@@ -173,7 +192,7 @@ const toggleStage = (id: number) => {
                                                     <Link :href="route('admin.subjects.edit', subject.id)" class="p-1.5 text-teal-600 bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors" title="تعديل">
                                                         <PencilIcon class="w-4 h-4" />
                                                     </Link>
-                                                    <button @click="deleteSubject(subject.id)" class="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" title="حذف">
+                                                    <button @click="deleteSubject(subject)" class="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" title="حذف">
                                                         <Trash2Icon class="w-4 h-4" />
                                                     </button>
                                                 </div>
@@ -199,5 +218,38 @@ const toggleStage = (id: number) => {
                 </div>
             </div>
         </div>
+
+        <!-- Subject Deletion Confirmation Modal -->
+        <Modal :show="confirmingSubjectDeletion" @close="closeModal" maxWidth="md">
+            <div class="p-8">
+                <div class="flex items-center justify-center w-16 h-16 mx-auto mb-6 bg-red-50 rounded-full">
+                    <AlertTriangleIcon class="w-8 h-8 text-red-600 animate-bounce" />
+                </div>
+                
+                <h3 class="text-xl font-black text-center text-gray-900 mb-2">
+                    تأكيد حذف المادة الدراسية
+                </h3>
+                
+                <p class="text-center text-gray-500 text-sm leading-relaxed mb-8">
+                    هل أنت متأكد من رغبتك في حذف المادة <span class="font-bold text-gray-900">{{ subjectToDelete?.name }}</span>؟ سيؤدي هذا إلى إزالتها من سجلات المراحل والمجموعات المرتبطة.
+                </p>
+
+                <div class="flex items-center gap-3">
+                    <DangerButton 
+                        class="flex-1 justify-center py-3 rounded-xl font-bold"
+                        @click="confirmDeleteSubject"
+                    >
+                        تأكيد الحذف
+                    </DangerButton>
+                    
+                    <SecondaryButton 
+                        class="flex-1 justify-center py-3 rounded-xl font-bold border-gray-200"
+                        @click="closeModal"
+                    >
+                        إلغاء الأمر
+                    </SecondaryButton>
+                </div>
+            </div>
+        </Modal>
     </AuthenticatedLayout>
 </template>

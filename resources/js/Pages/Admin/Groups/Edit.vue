@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import { UsersIcon, SaveIcon, ArrowRightIcon } from 'lucide-vue-next';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
+import { UsersIcon, SaveIcon, ArrowRightIcon, Trash2Icon, AlertTriangleIcon } from 'lucide-vue-next';
+import Modal from '@/Components/Modal.vue';
+import DangerButton from '@/Components/DangerButton.vue';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
+import { ref } from 'vue';
 
 const props = defineProps<{
     group: {
@@ -22,6 +26,23 @@ const form = useForm({
 
 const submit = () => {
     form.put(route('admin.groups.update', props.group.id));
+};
+
+const confirmingGroupDeletion = ref(false);
+
+const deleteGroup = () => {
+    confirmingGroupDeletion.value = true;
+};
+
+const closeModal = () => {
+    confirmingGroupDeletion.value = false;
+};
+
+const confirmDeleteGroup = () => {
+    router.delete(route('admin.groups.destroy', props.group.id), {
+        onSuccess: () => closeModal(),
+        onFinish: () => closeModal(),
+    });
 };
 </script>
 
@@ -92,16 +113,60 @@ const submit = () => {
                             </div>
 
                             <!-- Actions -->
-                            <div class="flex items-center justify-end pt-4 border-t border-gray-100">
-                                <Link :href="route('admin.groups.index')" class="px-5 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 transition-all ml-3">إلغاء</Link>
-                                <button type="submit" :disabled="form.processing" class="inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg shadow-lg hover:from-blue-700 hover:to-cyan-700 transition-all disabled:opacity-50">
-                                    <SaveIcon class="w-5 h-5 ml-2" /> حفظ التعديلات
+                            <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                                <button
+                                    type="button"
+                                    @click="deleteGroup"
+                                    class="inline-flex items-center px-4 py-2 text-sm font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-all duration-200"
+                                >
+                                    <Trash2Icon class="w-4 h-4 ml-2" />
+                                    حذف المجموعة
                                 </button>
+                                
+                                <div class="flex items-center">
+                                    <Link :href="route('admin.groups.index')" class="px-5 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 transition-all ml-3">إلغاء</Link>
+                                    <button type="submit" :disabled="form.processing" class="inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg shadow-lg hover:from-blue-700 hover:to-cyan-700 transition-all disabled:opacity-50">
+                                        <SaveIcon class="w-5 h-5 ml-2" /> حفظ التعديلات
+                                    </button>
+                                </div>
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Group Deletion Confirmation Modal -->
+        <Modal :show="confirmingGroupDeletion" @close="closeModal" maxWidth="md">
+            <div class="p-8">
+                <div class="flex items-center justify-center w-16 h-16 mx-auto mb-6 bg-red-50 rounded-full">
+                    <AlertTriangleIcon class="w-8 h-8 text-red-600 animate-bounce" />
+                </div>
+                
+                <h3 class="text-xl font-black text-center text-gray-900 mb-2">
+                    تأكيد حذف المجموعة
+                </h3>
+                
+                <p class="text-center text-gray-500 text-sm leading-relaxed mb-8">
+                    هل أنت متأكد من رغبتك في حذف المجموعة الدراسية <span class="font-bold text-gray-900">{{ group.name }}</span>؟ سيؤدي هذا إلى حذف جميع البيانات المرتبطة بها.
+                </p>
+
+                <div class="flex items-center gap-3">
+                    <DangerButton 
+                        class="flex-1 justify-center py-3 rounded-xl font-bold"
+                        @click="confirmDeleteGroup"
+                    >
+                        تأكيد الحذف
+                    </DangerButton>
+                    
+                    <SecondaryButton 
+                        class="flex-1 justify-center py-3 rounded-xl font-bold border-gray-200"
+                        @click="closeModal"
+                    >
+                        إلغاء الأمر
+                    </SecondaryButton>
+                </div>
+            </div>
+        </Modal>
     </AuthenticatedLayout>
 </template>

@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { PlusIcon, SearchIcon, UsersIcon, LayersIcon, ChevronDownIcon, ChevronUpIcon, Trash2Icon, PencilIcon } from 'lucide-vue-next';
+import { PlusIcon, SearchIcon, UsersIcon, LayersIcon, ChevronDownIcon, ChevronUpIcon, Trash2Icon, PencilIcon, AlertTriangleIcon } from 'lucide-vue-next';
+import Modal from '@/Components/Modal.vue';
+import DangerButton from '@/Components/DangerButton.vue';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
 import { ref } from 'vue';
 import Pagination from '@/Components/Pagination.vue';
 
@@ -28,9 +31,25 @@ const toggle = (stageId: string) => {
     openStages.value[stageId] = !openStages.value[stageId];
 };
 
-const deleteGroup = (id: string) => {
-    if (confirm('هل أنت متأكد من حذف هذه المجموعة الدراسية؟')) {
-        router.delete(route('admin.groups.destroy', id));
+const confirmingGroupDeletion = ref(false);
+const groupToDelete = ref<any>(null);
+
+const deleteGroup = (group: any) => {
+    groupToDelete.value = group;
+    confirmingGroupDeletion.value = true;
+};
+
+const closeModal = () => {
+    confirmingGroupDeletion.value = false;
+    groupToDelete.value = null;
+};
+
+const confirmDeleteGroup = () => {
+    if (groupToDelete.value) {
+        router.delete(route('admin.groups.destroy', groupToDelete.value.id), {
+            onSuccess: () => closeModal(),
+            onFinish: () => closeModal(),
+        });
     }
 };
 </script>
@@ -143,7 +162,7 @@ const deleteGroup = (id: string) => {
                                                     <Link :href="route('admin.groups.edit', group.id)" class="p-1.5 text-teal-600 bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors">
                                                         <PencilIcon class="w-4 h-4" />
                                                     </Link>
-                                                    <button @click="deleteGroup(group.id)" class="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
+                                                    <button @click="deleteGroup(group)" class="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
                                                         <Trash2Icon class="w-4 h-4" />
                                                     </button>
                                                 </div>
@@ -175,5 +194,38 @@ const deleteGroup = (id: string) => {
 
             </div>
         </div>
+
+        <!-- Group Deletion Confirmation Modal -->
+        <Modal :show="confirmingGroupDeletion" @close="closeModal" maxWidth="md">
+            <div class="p-8">
+                <div class="flex items-center justify-center w-16 h-16 mx-auto mb-6 bg-red-50 rounded-full">
+                    <AlertTriangleIcon class="w-8 h-8 text-red-600 animate-bounce" />
+                </div>
+                
+                <h3 class="text-xl font-black text-center text-gray-900 mb-2">
+                    تأكيد حذف المجموعة
+                </h3>
+                
+                <p class="text-center text-gray-500 text-sm leading-relaxed mb-8">
+                    هل أنت متأكد من رغبتك في حذف المجموعة الدراسية <span class="font-bold text-gray-900">{{ groupToDelete?.name }}</span>؟ سيؤدي هذا إلى حذف جميع البيانات المرتبطة بها.
+                </p>
+
+                <div class="flex items-center gap-3">
+                    <DangerButton 
+                        class="flex-1 justify-center py-3 rounded-xl font-bold"
+                        @click="confirmDeleteGroup"
+                    >
+                        تأكيد الحذف
+                    </DangerButton>
+                    
+                    <SecondaryButton 
+                        class="flex-1 justify-center py-3 rounded-xl font-bold border-gray-200"
+                        @click="closeModal"
+                    >
+                        إلغاء الأمر
+                    </SecondaryButton>
+                </div>
+            </div>
+        </Modal>
     </AuthenticatedLayout>
 </template>
