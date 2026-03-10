@@ -1,0 +1,18 @@
+{
+    "name": "نظام تسجيل الحضور والغياب",
+    "short_name": "الحضور والغياب",
+    "description": "نظام ذكي وشامل لإدارة حضور وغياب الطلاب عبر الـ QR",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#f8fafc",
+    "theme_color": "#0d9488",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "/pwa-icon.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}
