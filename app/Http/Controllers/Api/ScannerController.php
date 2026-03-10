@@ -30,17 +30,11 @@ class ScannerController extends Controller
             return response()->json(['error' => 'This lecture session is closed.'], 403);
         }
 
-        // 2. Data Encryption: Decrypt payload
-        try {
-            $studentExternalId = Crypt::decryptString($validated['qr_payload']);
-        } catch (DecryptException $e) {
-            return response()->json(['error' => 'Invalid or forged QR Code.'], 400); // Red Alert case
-        }
-
-        // 3. Find Student (using index)
-        $student = Student::where('student_external_id', $studentExternalId)->first();
+        // 2 & 3. Look up Student directly by the 24-char unique qr_payload
+        $student = Student::where('qr_payload', $validated['qr_payload'])->first();
+        
         if (!$student) {
-            return response()->json(['error' => 'Student not found in the system.'], 404);
+            return response()->json(['error' => 'Invalid or forged QR Code.'], 400); // Red Alert case
         }
 
         // 4. Duplicate Check

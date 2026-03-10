@@ -79,9 +79,9 @@ class StudentController extends Controller
             $validated['photo_path'] = $path;
         }
 
-        // Generate encrypted QR payload
-        // The payload only contains the external ID, making it lightweight but secure
-        $qrPayload = Crypt::encryptString($validated['student_external_id']);
+        // Generate a shorter unique QR payload to make the printed QR code less dense
+        // Using a 24-character random string provides 144 bits of entropy, which is secure enough for this use case
+        $qrPayload = \Illuminate\Support\Str::random(24);
         $validated['qr_payload'] = $qrPayload;
 
         Student::create($validated);

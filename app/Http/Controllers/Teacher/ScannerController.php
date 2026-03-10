@@ -67,16 +67,11 @@ class ScannerController extends Controller
             ], 403);
         }
 
-        try {
-            $studentExternalId = \Illuminate\Support\Facades\Crypt::decryptString($request->qr_payload);
-        } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
-            return response()->json(['success' => false, 'message' => 'رمز QR غير صالح أو مساوم عليه.'], 400);
-        }
-
-        $student = \App\Models\Student::where('student_external_id', $studentExternalId)->first();
+        // Look up student directly by their unique qr_payload token
+        $student = \App\Models\Student::where('qr_payload', $request->qr_payload)->first();
 
         if (!$student) {
-            return response()->json(['success' => false, 'message' => 'لم يتم العثور على الطالب في النظام.'], 404);
+            return response()->json(['success' => false, 'message' => 'رمز QR غير صالح أو الطالب غير موجود.'], 400);
         }
 
         // Check if student belongs to this lecture's group (stage and study_type are derived from group)
