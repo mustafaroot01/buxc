@@ -24,7 +24,7 @@ const form = useForm({
     subject_id: '',
     stage_id: '',
     group_id: '',
-    study_type: 'morning',
+    study_type: '',
     date: todayDate,
     time: todayTime,
 });
@@ -41,10 +41,32 @@ watch(() => form.subject_id, (newSubjectId) => {
     const subject = props.subjects.find(s => s.id === newSubjectId);
     if (subject) {
         form.stage_id = subject.stage_id;
+        
+        // Auto-select first study type if available
+        const types = [...new Set(subject.groups.map(g => g.study_type))];
+        if (types.length > 0) {
+            form.study_type = types[0];
+        } else {
+            form.study_type = '';
+        }
     } else {
         form.stage_id = '';
+        form.study_type = '';
     }
     form.group_id = '';
+});
+
+// Computed to get unique study types for the selected subject
+const availableStudyTypes = computed(() => {
+    if (!form.subject_id) return [];
+    const subject = props.subjects.find(s => s.id === form.subject_id);
+    if (!subject) return [];
+    
+    const types = [...new Set(subject.groups.map(g => g.study_type))];
+    return types.map(t => ({
+        value: t,
+        label: t === 'morning' ? 'صباحي' : 'مسائي'
+    }));
 });
 
 // Filter available groups based on selected subject and study type
@@ -155,9 +177,14 @@ const submit = () => {
 
                                     <div>
                                         <label class="block text-sm font-bold text-gray-700 mb-2">نوع الدراسة <span class="text-red-500">*</span></label>
-                                        <select v-model="form.study_type" required class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full p-3 transition-colors">
-                                            <option value="morning">صباحي</option>
-                                            <option value="evening">مسائي</option>
+                                        <select v-model="form.study_type" required 
+                                                class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full p-3 transition-colors disabled:bg-gray-100 disabled:opacity-50"
+                                                :disabled="!form.subject_id || availableStudyTypes.length === 0">
+                                            <option value="" disabled v-if="!form.subject_id">اختر المادة أولاً</option>
+                                            <option value="" disabled v-else-if="availableStudyTypes.length === 0">لا توجد أنواع دراسة متاحة</option>
+                                            <option v-for="type in availableStudyTypes" :key="type.value" :value="type.value">
+                                                {{ type.label }}
+                                            </option>
                                         </select>
                                         <div v-if="form.errors.study_type" class="mt-2 text-sm text-red-600">{{ form.errors.study_type }}</div>
                                     </div>
