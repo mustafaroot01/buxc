@@ -6,12 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Traits\HasUuid;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use App\Traits\LogsArabicActivity;
 
 class AcademicStage extends Model
 {
-    use HasFactory, HasUuid, SoftDeletes, LogsArabicActivity;
+    use HasFactory, HasUuids, SoftDeletes, LogsArabicActivity;
 
     public function getArabicModelLabel(): string { return 'مرحلة دراسية'; }
     public function getArabicName(): string { return $this->name; }

@@ -13,7 +13,7 @@ class SubjectController extends Controller
 {
     public function index(Request $request)
     {
-        $query = AcademicStage::with(['subjects.teacher', 'subjects.groups'])->orderBy('level');
+        $query = AcademicStage::with(['subjects.teacher', 'subjects.groups']);
 
         if ($request->filled('search')) {
             $query->whereHas('subjects', function ($q) use ($request) {
