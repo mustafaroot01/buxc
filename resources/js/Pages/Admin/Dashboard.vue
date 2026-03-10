@@ -32,76 +32,91 @@ defineProps<{
 
         <div class="py-12 bg-gray-50 min-h-screen">
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                <!-- Stats Grid with Glassmorphism and Gradients -->
-                <div class="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 xl:grid-cols-5">
+                <!-- Stats Grid - Premium & Neat Redesign -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-10">
                     <!-- Total Students -->
-                    <div class="relative overflow-hidden bg-white/70 backdrop-blur-xl border border-white shadow-xl shadow-blue-500/10 rounded-2xl transition-all hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20 duration-300">
-                        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400 to-indigo-500 opacity-20 blur-3xl rounded-full -mr-16 -mt-16"></div>
-                        <div class="p-6 relative z-10 flex items-center justify-between">
-                            <div>
-                                <p class="mb-1 text-sm font-semibold text-gray-500 uppercase tracking-wider">إجمالي الطلاب</p>
-                                <p class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">{{ stats.total_students }}</p>
+                    <div class="group relative overflow-hidden bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100/60 transition-all hover:shadow-xl hover:-translate-y-1 duration-300">
+                        <div class="flex flex-col h-full justify-between gap-4">
+                            <div class="flex items-center justify-between">
+                                <div class="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 group-hover:bg-indigo-500 group-hover:text-white transition-colors duration-300">
+                                    <UsersIcon class="w-6 h-6" />
+                                </div>
+                                <span class="text-[10px] font-black tracking-widest text-indigo-300 uppercase">STUDENTS</span>
                             </div>
-                            <div class="p-4 rounded-xl bg-gradient-to-br from-teal-50 to-emerald-100 text-blue-600 shadow-inner">
-                                <UsersIcon class="w-8 h-8" />
+                            <div>
+                                <p class="text-[13px] font-bold text-gray-400 mb-1">إجمالي الطلاب</p>
+                                <p class="text-3xl font-black text-gray-900">{{ stats.total_students }}</p>
                             </div>
                         </div>
+                        <div class="absolute bottom-0 left-0 w-full h-1 bg-indigo-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
                     </div>
 
                     <!-- Total Teachers -->
-                    <div class="relative overflow-hidden bg-white/70 backdrop-blur-xl border border-white shadow-xl shadow-emerald-500/10 rounded-2xl transition-all hover:scale-105 hover:shadow-2xl hover:shadow-emerald-500/20 duration-300">
-                        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-400 to-teal-500 opacity-20 blur-3xl rounded-full -mr-16 -mt-16"></div>
-                        <div class="p-6 relative z-10 flex items-center justify-between">
-                            <div>
-                                <p class="mb-1 text-sm font-semibold text-gray-500 uppercase tracking-wider">إجمالي الأساتذة</p>
-                                <p class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600">{{ stats.total_teachers }}</p>
+                    <div class="group relative overflow-hidden bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100/60 transition-all hover:shadow-xl hover:-translate-y-1 duration-300">
+                        <div class="flex flex-col h-full justify-between gap-4">
+                            <div class="flex items-center justify-between">
+                                <div class="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-colors duration-300">
+                                    <PresentationIcon class="w-6 h-6" />
+                                </div>
+                                <span class="text-[10px] font-black tracking-widest text-emerald-300 uppercase">TEACHERS</span>
                             </div>
-                            <div class="p-4 rounded-xl bg-gradient-to-br from-emerald-100 to-teal-100 text-emerald-600 shadow-inner">
-                                <PresentationIcon class="w-8 h-8" />
+                            <div>
+                                <p class="text-[13px] font-bold text-gray-400 mb-1">إجمالي الأساتذة</p>
+                                <p class="text-3xl font-black text-gray-900">{{ stats.total_teachers }}</p>
                             </div>
                         </div>
+                        <div class="absolute bottom-0 left-0 w-full h-1 bg-emerald-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
                     </div>
 
                     <!-- Active Subjects -->
-                    <div class="relative overflow-hidden bg-white/70 backdrop-blur-xl border border-white shadow-xl shadow-purple-500/10 rounded-2xl transition-all hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/20 duration-300">
-                        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-400 to-emerald-400 opacity-20 blur-3xl rounded-full -mr-16 -mt-16"></div>
-                        <div class="p-6 relative z-10 flex items-center justify-between">
-                            <div>
-                                <p class="mb-1 text-sm font-semibold text-gray-500 uppercase tracking-wider">المواد النشطة</p>
-                                <p class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-emerald-500">{{ stats.active_subjects }}</p>
+                    <div class="group relative overflow-hidden bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100/60 transition-all hover:shadow-xl hover:-translate-y-1 duration-300">
+                        <div class="flex flex-col h-full justify-between gap-4">
+                            <div class="flex items-center justify-between">
+                                <div class="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 group-hover:bg-amber-500 group-hover:text-white transition-colors duration-300">
+                                    <BookOpenIcon class="w-6 h-6" />
+                                </div>
+                                <span class="text-[10px] font-black tracking-widest text-amber-300 uppercase">SUBJECTS</span>
                             </div>
-                            <div class="p-4 rounded-xl bg-gradient-to-br from-purple-100 to-fuchsia-100 text-teal-600 shadow-inner">
-                                <BookOpenIcon class="w-8 h-8" />
+                            <div>
+                                <p class="text-[13px] font-bold text-gray-400 mb-1">المواد النشطة</p>
+                                <p class="text-3xl font-black text-gray-900">{{ stats.active_subjects }}</p>
                             </div>
                         </div>
+                        <div class="absolute bottom-0 left-0 w-full h-1 bg-amber-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
                     </div>
 
                     <!-- Today's Lectures -->
-                    <div class="relative overflow-hidden bg-white/70 backdrop-blur-xl border border-white shadow-xl shadow-orange-500/10 rounded-2xl transition-all hover:scale-105 hover:shadow-2xl hover:shadow-orange-500/20 duration-300">
-                        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-400 to-amber-500 opacity-20 blur-3xl rounded-full -mr-16 -mt-16"></div>
-                        <div class="p-6 relative z-10 flex items-center justify-between">
-                            <div>
-                                <p class="mb-1 text-sm font-semibold text-gray-500 uppercase tracking-wider">محاضرات اليوم</p>
-                                <p class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-600">{{ stats.todays_lectures }}</p>
+                    <div class="group relative overflow-hidden bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100/60 transition-all hover:shadow-xl hover:-translate-y-1 duration-300">
+                        <div class="flex flex-col h-full justify-between gap-4">
+                            <div class="flex items-center justify-between">
+                                <div class="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 group-hover:bg-rose-500 group-hover:text-white transition-colors duration-300">
+                                    <ActivityIcon class="w-6 h-6" />
+                                </div>
+                                <span class="text-[10px] font-black tracking-widest text-rose-300 uppercase">TODAY</span>
                             </div>
-                            <div class="p-4 rounded-xl bg-gradient-to-br from-orange-100 to-amber-100 text-orange-600 shadow-inner">
-                                <ActivityIcon class="w-8 h-8" />
+                            <div>
+                                <p class="text-[13px] font-bold text-gray-400 mb-1">محاضرات اليوم</p>
+                                <p class="text-3xl font-black text-gray-900">{{ stats.todays_lectures }}</p>
                             </div>
                         </div>
+                        <div class="absolute bottom-0 left-0 w-full h-1 bg-rose-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
                     </div>
 
-                    <!-- Active Warnings (Link to page) -->
-                    <Link :href="route('admin.warnings.index')" class="relative overflow-hidden bg-white/70 backdrop-blur-xl border border-white shadow-xl shadow-red-500/10 rounded-2xl transition-all hover:scale-105 hover:shadow-2xl hover:shadow-red-500/20 duration-300 block">
-                        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-400 to-rose-500 opacity-20 blur-3xl rounded-full -mr-16 -mt-16"></div>
-                        <div class="p-6 relative z-10 flex items-center justify-between">
-                            <div>
-                                <p class="mb-1 text-[11px] font-bold text-red-600 uppercase tracking-wider">تنبيهات الغياب</p>
-                                <p class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-rose-600">{{ stats.active_warnings }}</p>
+                    <!-- Active Warnings -->
+                    <Link :href="route('admin.warnings.index')" class="group relative overflow-hidden bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100/60 transition-all hover:shadow-xl hover:-translate-y-1 duration-300 block">
+                        <div class="flex flex-col h-full justify-between gap-4">
+                            <div class="flex items-center justify-between">
+                                <div class="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center text-red-500 group-hover:bg-red-500 group-hover:text-white transition-colors duration-300" :class="{'animate-pulse': stats.active_warnings > 0}">
+                                    <AlertTriangleIcon class="w-6 h-6" />
+                                </div>
+                                <span class="text-[10px] font-black tracking-widest text-red-300 uppercase">WARNINGS</span>
                             </div>
-                            <div class="p-4 rounded-xl bg-gradient-to-br from-red-100 to-rose-100 text-red-600 shadow-inner" :class="{'animate-pulse': stats.active_warnings > 0}">
-                                <AlertTriangleIcon class="w-8 h-8" />
+                            <div>
+                                <p class="text-[13px] font-bold text-gray-400 mb-1">تنبيهات الغياب</p>
+                                <p class="text-3xl font-black text-red-600">{{ stats.active_warnings }}</p>
                             </div>
                         </div>
+                        <div class="absolute bottom-0 left-0 w-full h-1 bg-red-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
                     </Link>
                 </div>
 
