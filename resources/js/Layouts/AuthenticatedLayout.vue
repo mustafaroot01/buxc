@@ -197,8 +197,12 @@ const hasRole = (userTokens: any, navRoles: string[], excludeRoles?: string[]) =
                                 <template #trigger>
                                     <button class="flex items-center p-1.5 transition-colors rounded-full hover:bg-gray-100">
                                         <span class="sr-only">Open user menu</span>
-                                        <div class="h-9 w-9 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-bold shadow-inner">
-                                            {{ $page.props.auth.user.full_name?.charAt(0) || 'U' }}
+                                        <div class="h-9 w-9 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-bold shadow-inner overflow-hidden">
+                                            <img v-if="$page.props.auth.user.photo_path" 
+                                                 :src="'/storage/' + $page.props.auth.user.photo_path" 
+                                                 class="h-full w-full object-cover" 
+                                                 @error="(e) => (e.target as HTMLImageElement).style.display = 'none'" />
+                                            <span v-else>{{ $page.props.auth.user.full_name?.charAt(0) || 'U' }}</span>
                                         </div>
                                         <span class="hidden lg:flex lg:items-center">
                                             <span class="ms-3 text-sm font-bold leading-6 text-gray-900" aria-hidden="true">{{ $page.props.auth.user.full_name }}</span>
