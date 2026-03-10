@@ -15,27 +15,21 @@ class ReportController extends Controller
     public function index()
     {
         $stages = \App\Models\AcademicStage::with(['groups', 'subjects'])->get();
-        $lectures = Lecture::with(['subject', 'group.stage'])
-            ->select('id', 'subject_id', 'group_id', 'start_time')
-            ->latest()
-            ->get();
         
         return Inertia::render('Admin/Reports/Index', [
             'stages' => $stages,
-            'lectures' => $lectures,
         ]);
     }
 
     public function export(Request $request)
     {
         $filters = $request->validate([
-            'lecture_id' => 'nullable|string',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date',
-            'stage_id' => 'nullable|string',
-            'study_type' => 'nullable|string',
-            'subject_id' => 'nullable|string',
-            'group_id' => 'nullable|string',
+            'stage_id' => 'nullable|exists:academic_stages,id',
+            'study_type' => 'nullable|in:morning,evening',
+            'subject_id' => 'nullable|exists:subjects,id',
+            'group_id' => 'nullable|exists:academic_groups,id',
         ]);
 
         $date = Carbon::now()->format('Y_m_d_H_i');

@@ -15,19 +15,9 @@ const props = defineProps<{
         groups: Array<{ id: string; name: string; study_type: string }>;
         subjects: Array<{ id: string; name: string }>;
     }>;
-    lectures: Array<{
-        id: string;
-        title: string;
-        subject_id: string;
-        group_id: string;
-        subject: { name: string };
-        group: { name: string; stage_id: string; stage: { name: string } };
-        date: string;
-    }>;
 }>();
 
 const form = useForm({
-    lecture_id: '',
     start_date: '',
     end_date: '',
     stage_id: '',
@@ -54,47 +44,8 @@ const availableSubjects = computed(() => {
     return stage ? stage.subjects : [];
 });
 
-const lectureSearch = ref('');
-
-const filteredLectures = computed(() => {
-    let result = props.lectures.filter(lecture => {
-        // Filter by Stage
-        if (form.stage_id && lecture.group?.stage_id !== form.stage_id) return false;
-        
-        // Filter by Subject
-        if (form.subject_id && lecture.subject_id !== form.subject_id) return false;
-        
-        // Filter by Group
-        if (form.group_id && lecture.group_id !== form.group_id) return false;
-        
-        // Filter by Dates
-        if (form.start_date && lecture.date < form.start_date) return false;
-        if (form.end_date && lecture.date > form.end_date) return false;
-
-        // Search Match
-        if (lectureSearch.value) {
-            const searchLower = lectureSearch.value.toLowerCase();
-            const subjectName = (lecture.subject?.name || '').toLowerCase();
-            const dateStr = lecture.date || '';
-            const titleStr = (lecture.title || '').toLowerCase();
-            
-            if (!subjectName.includes(searchLower) && 
-                !dateStr.includes(searchLower) && 
-                !titleStr.includes(searchLower)) {
-                return false;
-            }
-        }
-        
-        return true;
-    });
-
-    // Limit to 50 for better performance and UX if no specific search is active
-    return result.slice(0, 100);
-});
-
 const downloadReport = () => {
     const params = new URLSearchParams();
-    if (form.lecture_id) params.append('lecture_id', form.lecture_id);
     if (form.start_date) params.append('start_date', form.start_date);
     if (form.end_date) params.append('end_date', form.end_date);
     if (form.stage_id) params.append('stage_id', form.stage_id);
@@ -205,7 +156,7 @@ const resetFilters = () => {
                             </div>
 
                             <!-- Subject Selection -->
-                            <div class="space-y-2 lg:col-span-2">
+                            <div class="space-y-2 lg:col-span-3">
                                 <label class="flex items-center gap-2 text-sm font-black text-gray-700 mb-2 mr-1">
                                     <BookOpenIcon class="w-4 h-4 text-teal-600" />
                                     المادة الدراسية
@@ -214,33 +165,6 @@ const resetFilters = () => {
                                     <option value="">-- كل المواد --</option>
                                     <option v-for="subject in availableSubjects" :key="subject.id" :value="subject.id">{{ subject.name }}</option>
                                 </select>
-                            </div>
-
-                            <div class="space-y-2">
-                                <label class="flex items-center justify-between text-sm font-black text-gray-700 mb-2 mr-1">
-                                    <div class="flex items-center gap-2">
-                                        <RefreshCwIcon class="w-4 h-4 text-teal-600" />
-                                        أو اختر محاضرة محددة
-                                    </div>
-                                    <span v-if="lectureSearch || form.stage_id" class="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
-                                        {{ filteredLectures.length }} نتيجة
-                                    </span>
-                                </label>
-                                
-                                <div class="relative group">
-                                    <input 
-                                        v-model="lectureSearch" 
-                                        type="text" 
-                                        placeholder="ابحث عن مادة أو تاريخ..." 
-                                        class="w-full bg-amber-50/50 border-amber-100 rounded-t-2xl focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-medium text-xs h-10 border-b-0 placeholder:text-amber-300"
-                                    >
-                                    <select v-model="form.lecture_id" class="w-full bg-amber-50/30 border-amber-100 rounded-b-2xl focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-sm h-12 border-t-dashed">
-                                        <option value="">-- لا يوجد (سحب شامل) --</option>
-                                        <option v-for="lecture in filteredLectures" :key="lecture.id" :value="lecture.id">
-                                            {{ lecture.date }} | {{ lecture.subject?.name }}
-                                        </option>
-                                    </select>
-                                </div>
                             </div>
 
                         </div>
