@@ -43,7 +43,13 @@ class QrPrintController extends Controller
 
         $students = $query->get()->map(function($student) {
             // Generate Base64 SVG for printing directly in the view
-            $qrSvg = QrCode::size(200)->generate($student->qr_payload);
+            // Apply custom styling for a beautiful, distinct look (Deep purple on soft lilac, rounded dots)
+            $qrSvg = QrCode::size(200)
+                ->color(31, 22, 69) // Dark purple
+                ->backgroundColor(248, 240, 255) // Soft pale lilac
+                ->margin(2) // Some breathing room around the edges
+                ->style('round') // Modern circular dots instead of harsh squares
+                ->generate($student->qr_payload);
             
             return [
                 'id' => $student->id,

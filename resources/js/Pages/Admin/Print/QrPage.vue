@@ -106,8 +106,8 @@ onMounted(() => {
         margin: 0;
         padding: 0;
         background-color: white !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
     .print-container {
         background: white !important;
@@ -116,12 +116,10 @@ onMounted(() => {
     .student-card {
         page-break-inside: avoid;
         break-inside: avoid;
-        border-color: #000 !important;
-        border-width: 1px !important;
-        border-radius: 8px !important;
-    }
-    .student-card * {
-        color: #000 !important;
+        border-color: #f3e8ff !important; /* Soft purple border instead of black */
+        border-width: 2px !important;
+        border-radius: 12px !important;
+        background-color: #fcfaff !important; /* Very subtle purple tint background */
     }
     
     @page { 
