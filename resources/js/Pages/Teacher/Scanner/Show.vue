@@ -14,10 +14,11 @@ const props = defineProps<{
         subject: { name: string; code: string };
         group: { name: string };
     };
+    initial_students: Array<{name: string, time: string, external_id: string}>;
 }>();
 
-const scannedStudents = ref<Array<{name: string, time: string, external_id?: string}>>([]);
-const totalScanned = ref(0);
+const scannedStudents = ref<Array<{name: string, time: string, external_id?: string}>>([...props.initial_students]);
+const totalScanned = ref(props.initial_students.length);
 
 const scannerStatus = ref<'ready' | 'scanning' | 'success' | 'duplicate' | 'error'>('ready');
 const lastScanMessage = ref('');
@@ -32,8 +33,6 @@ const recentScans = new Set<string>();
 const startScanner = async () => {
     try {
         html5QrCode = new Html5Qrcode("reader");
-        // Increased FPS to 30 for much faster recognition
-        // Expanded qrbox for a larger scanning area and easier aiming
         const config = { fps: 30, qrbox: { width: 350, height: 350 } };
         
         await html5QrCode.start(
@@ -63,10 +62,19 @@ const stopScanner = async () => {
     }
 };
 
+// Preload audio objects so they can be played on mobile browsers immediately upon interaction
+const audioSuccess = new Audio('/success.mp3');
+const audioError = new Audio('/error.mp3');
+
 const playSound = (type: 'success' | 'error') => {
     try {
-        const audio = new Audio(`/${type}.mp3`);
-        audio.play().catch(e => console.log('Audio play prevented', e));
+        const audio = type === 'success' ? audioSuccess : audioError;
+        audio.currentTime = 0; // Reset to start
+        audio.volume = 1.0;
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+             playPromise.catch((e) => console.log('Audio autoplay prevented by browser', e));
+        }
     } catch (e) {
         console.log("Audio not supported or blocked");
     }

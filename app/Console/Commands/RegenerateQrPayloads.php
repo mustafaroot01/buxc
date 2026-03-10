@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Student;
+use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
 class RegenerateQrPayloads extends Command
@@ -35,7 +35,7 @@ class RegenerateQrPayloads extends Command
 
         foreach ($students as $student) {
             $student->update([
-                'qr_payload' => Str::random(24)
+                'qr_payload' => Str::random(24),
             ]);
             $bar->advance();
         }

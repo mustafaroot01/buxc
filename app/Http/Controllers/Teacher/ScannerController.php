@@ -23,8 +23,23 @@ class ScannerController extends Controller
             abort(403);
         }
 
+        // Fetch already scanned students to populate the live feed on initial load
+        $attendances = Attendance::with('student')
+            ->where('lecture_id', $lecture->id)
+            ->where('status', 'present')
+            ->orderBy('check_in_at', 'desc')
+            ->get()
+            ->map(function ($attendance) {
+                return [
+                    'name' => $attendance->student->full_name,
+                    'time' => $attendance->check_in_at->format('h:i A'),
+                    'external_id' => $attendance->student->student_external_id,
+                ];
+            });
+
         return Inertia::render('Teacher/Scanner/Show', [
-            'lecture' => $lecture
+            'lecture' => $lecture,
+            'initial_students' => $attendances
         ]);
     }
 

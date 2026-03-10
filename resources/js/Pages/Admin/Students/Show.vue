@@ -179,7 +179,7 @@ const printQrCode = () => {
                                                 </span>
                                             </td>
                                             <td class="px-6 py-5 text-left text-gray-400">
-                                                <span v-if="attendance.method === 'qr'" class="text-xs font-bold text-indigo-500 bg-teal-50 px-2 py-1 rounded inline-flex">QR مسح</span>
+                                                <span v-if="attendance.check_in_method === 'qr'" class="text-xs font-bold text-indigo-500 bg-teal-50 px-2 py-1 rounded inline-flex">QR مسح</span>
                                                 <span v-else class="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded inline-flex">يدوي</span>
                                             </td>
                                         </tr>
