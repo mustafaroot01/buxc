@@ -59,10 +59,10 @@ class TeacherController extends Controller
             'full_name' => $validated['full_name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'academic_title' => $validated['academic_title'],
-            'degree' => $validated['degree'],
-            'phone_number' => $validated['phone_number'],
-            'gender' => $validated['gender'],
+            'academic_title' => $validated['academic_title'] ?? null,
+            'degree' => $validated['degree'] ?? null,
+            'phone_number' => $validated['phone_number'] ?? null,
+            'gender' => $validated['gender'] ?? null,
             'photo_path' => $photoPath,
         ]);
         $user->assignRole('teacher');
@@ -105,11 +105,11 @@ class TeacherController extends Controller
             'department' => $validated['department'] ?? null,
             'full_name' => $validated['full_name'],
             'email' => $validated['email'],
-            'password' => $validated['password'] ? Hash::make($validated['password']) : $teacher->password,
-            'academic_title' => $validated['academic_title'],
-            'degree' => $validated['degree'],
-            'phone_number' => $validated['phone_number'],
-            'gender' => $validated['gender'],
+            'password' => ($validated['password'] ?? null) ? Hash::make($validated['password']) : $teacher->password,
+            'academic_title' => $validated['academic_title'] ?? null,
+            'degree' => $validated['degree'] ?? null,
+            'phone_number' => $validated['phone_number'] ?? null,
+            'gender' => $validated['gender'] ?? null,
             'photo_path' => $photoPath,
         ]);
 
