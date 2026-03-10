@@ -33,10 +33,8 @@ class ProcessLectureAbsences implements ShouldQueue
     {
         $lecture = $this->lecture;
         
-        // Find all students that belong to this lecture's target audience
-        $students = Student::where('stage_id', $lecture->stage_id)
-            ->where('group_id', $lecture->group_id)
-            ->where('study_type', $lecture->study_type)
+        // Find all students that belong to this lecture's group
+        $students = Student::where('group_id', $lecture->group_id)
             ->get();
 
         // Fetch configured threshold (default to 5)
