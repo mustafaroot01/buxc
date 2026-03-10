@@ -37,18 +37,21 @@ class RolesAndPermissionsSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::findOrCreate($permission, 'web');
         }
 
+        // Reset cached roles and permissions AGAIN after creation
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
         // create roles and assign created permissions
-        $roleTeacher = Role::create(['name' => 'teacher']);
+        $roleTeacher = Role::findOrCreate('teacher', 'web');
         $roleTeacher->givePermissionTo([
             'scan attendance',
             'override attendance', // Locked to 24 hours via UI/Policy
             'view reports'
         ]);
 
-        $roleAdmin = Role::create(['name' => 'admin']);
+        $roleAdmin = Role::findOrCreate('admin', 'web');
         $roleAdmin->givePermissionTo([
             'manage stages',
             'manage groups',
@@ -61,7 +64,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'access archive'
         ]);
 
-        $roleSuperAdmin = Role::create(['name' => 'super_admin']);
+        $roleSuperAdmin = Role::findOrCreate('super_admin', 'web');
         $roleSuperAdmin->givePermissionTo(Permission::all());
 
         // Create a default Super Admin
