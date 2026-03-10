@@ -73,7 +73,18 @@ php artisan view:cache
 - `storage/`
 - `bootstrap/cache/`
 
-## 7. مهام المجدول (Cron Job)
+## 7. حل مشكلة Node.js (npm command not found)
+إذا ظهر لك خطأ متعلق بـ `nodenv` أو `npm` عند التحميل:
+1. اختر نسخة Node.js المتوفرة في سيرفرك (مثلاً 22):
+   ```bash
+   nodenv local 22
+   ```
+2. تأكد من إعادة تشغيل الأمر:
+   ```bash
+   npm install && npm run build
+   ```
+
+## 8. مهام المجدول (Cron Job)
 لضمان عمل تنبيهات الغياب والمهام التلقائية، أضف مهمة Cron في بلاسك:
 `* * * * * php /path/to/your/project/artisan schedule:run >> /dev/null 2>&1`
 
