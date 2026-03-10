@@ -16,7 +16,7 @@ class ReportController extends Controller
     {
         $stages = \App\Models\AcademicStage::with(['groups', 'subjects'])->get();
         $lectures = Lecture::with(['subject', 'group.stage'])
-            ->select('id', 'subject_id', 'group_id', 'date')
+            ->select('id', 'subject_id', 'group_id', 'start_time')
             ->latest()
             ->get();
         

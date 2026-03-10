@@ -40,12 +40,12 @@ class AttendanceExport implements FromQuery, WithHeadings, WithMapping, ShouldAu
         // 2. Date Range
         if (!empty($this->filters['start_date'])) {
             $query->whereHas('lecture', function ($q) {
-                $q->whereDate('date', '>=', $this->filters['start_date']);
+                $q->whereDate('start_time', '>=', $this->filters['start_date']);
             });
         }
         if (!empty($this->filters['end_date'])) {
             $query->whereHas('lecture', function ($q) {
-                $q->whereDate('date', '<=', $this->filters['end_date']);
+                $q->whereDate('start_time', '<=', $this->filters['end_date']);
             });
         }
 
