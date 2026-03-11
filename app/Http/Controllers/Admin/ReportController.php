@@ -37,12 +37,7 @@ class ReportController extends Controller
         $date = Carbon::now()->format('Y-m-d_H-i');
         $fileName = "attendance_report_{$date}.xlsx";
 
-        // Queue the export in the background; notify the user when done
-        Excel::queue(new AttendanceExport($filters), "exports/{$fileName}")->chain([
-            new \App\Jobs\NotifyUserOfCompletedExport(auth()->id(), $fileName),
-        ]);
-
-        return back()->with('success', 'جاري تجهيز التقرير في الخلفية، سيظهر رابط التحميل فور الاكتمال.');
+        return Excel::download(new AttendanceExport($filters), $fileName);
     }
 
     public function downloadExport($file)
