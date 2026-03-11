@@ -67,13 +67,15 @@ class RolesAndPermissionsSeeder extends Seeder
         $roleSuperAdmin = Role::findOrCreate('super_admin', 'web');
         $roleSuperAdmin->givePermissionTo(Permission::all());
 
-        // Create a default Super Admin
-        $superAdmin = User::create([
-            'full_name' => 'Super Admin',
-            'email' => 'admin@admin.com',
-            'password' => bcrypt('password'),
-        ]);
-        $superAdmin->assignRole('super_admin');
+        // Create a default Super Admin (safe to run multiple times)
+        $superAdmin = User::firstOrCreate(
+            ['email' => 'admin@admin.com'],
+            [
+                'full_name' => 'Super Admin',
+                'password'  => bcrypt('password'),
+            ]
+        );
+        $superAdmin->syncRoles('super_admin');
     }
 }
 
