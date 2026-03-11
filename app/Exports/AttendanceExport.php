@@ -105,13 +105,13 @@ class AttendanceExport implements FromQuery, WithHeadings, WithMapping, ShouldAu
         };
 
         return [
-            $attendance->student->first_name . ' ' . $attendance->student->last_name,
+            $attendance->student ? ($attendance->student->first_name . ' ' . $attendance->student->last_name) : 'طالب غير موجود',
             $attendance->student->student_external_id ?? '---',
             $attendance->student->group->stage->name ?? '---',
             ($attendance->student->group->study_type ?? '') === 'morning' ? 'صباحي' : 'مسائي',
             $attendance->student->group->name ?? '---',
             $attendance->lecture->subject->name ?? '---',
-            $attendance->lecture->date ? Carbon::parse($attendance->lecture->date)->format('Y-m-d') : '---',
+            $attendance->lecture?->date ? Carbon::parse($attendance->lecture->date)->format('Y-m-d') : '---',
             $attendance->check_in_at ? $attendance->check_in_at->format('H:i:s') : 'بواسطة النظام',
             $statusAr,
         ];
