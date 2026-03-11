@@ -294,7 +294,7 @@ const downloadLecture = (id: string) => {
 
                     <!-- Table Head -->
                     <div class="hidden md:grid grid-cols-12 px-5 py-3 bg-gray-50 border-b border-gray-100 text-xs font-bold text-gray-500">
-                        <div class="col-span-3">المحاضرة</div>
+                        <div class="col-span-2">المحاضرة</div>
                         <div class="col-span-2 text-center">الأستاذ</div>
                         <div class="col-span-2 text-center">المجموعة</div>
                         <div class="col-span-2 text-center">التاريخ والوقت</div>
@@ -315,7 +315,7 @@ const downloadLecture = (id: string) => {
                          :class="(index as number) % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'">
 
                         <!-- Title + Subject -->
-                        <div class="col-span-3 flex flex-col justify-center">
+                        <div class="col-span-2 flex flex-col justify-center">
                             <p class="text-sm font-black text-gray-900 leading-tight">{{ lecture.title }}</p>
                             <p class="text-xs text-indigo-600 font-medium mt-0.5">
                                 <BookOpenIcon class="w-3 h-3 inline ml-1" />{{ lecture.subject?.name }}
