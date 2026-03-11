@@ -144,7 +144,7 @@ const downloadQr = () => {
                                     placeholder="الاسم الثاني" />
                             </div>
                             <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-1.5">اللقب <span class="text-red-500">*</span></label>
+                                <label class="block text-sm font-bold text-gray-700 mb-1.5">الاسم الثالث واللقب <span class="text-red-500">*</span></label>
                                 <input v-model="submitting.last_name" type="text" required
                                     class="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all"
                                     placeholder="اللقب" />
