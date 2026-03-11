@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\WarningController as AdminWarningController;
+use App\Http\Controllers\Admin\RegistrationFormController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
 use App\Http\Controllers\Teacher\WarningController as TeacherWarningController;
 use Illuminate\Support\Facades\Route;
@@ -52,6 +54,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Warnings
         Route::get('/warnings', [AdminWarningController::class, 'index'])->name('warnings.index');
         Route::get('/warnings/export', [AdminWarningController::class, 'export'])->name('warnings.export');
+
+        // Registration Forms (Super Admin only)
+        Route::middleware(['role:super_admin'])->group(function () {
+            Route::get('/registrations', [RegistrationFormController::class, 'index'])->name('registrations.index');
+            Route::post('/registrations', [RegistrationFormController::class, 'store'])->name('registrations.store');
+            Route::post('/registrations/{id}/toggle', [RegistrationFormController::class, 'toggle'])->name('registrations.toggle');
+            Route::get('/registrations/{id}/submissions', [RegistrationFormController::class, 'submissions'])->name('registrations.submissions');
+            Route::post('/registrations/{id}/approve/{submissionId}', [RegistrationFormController::class, 'approve'])->name('registrations.approve');
+            Route::post('/registrations/{id}/approve-all', [RegistrationFormController::class, 'approveAll'])->name('registrations.approve-all');
+            Route::post('/registrations/{id}/reject/{submissionId}', [RegistrationFormController::class, 'reject'])->name('registrations.reject');
+            Route::delete('/registrations/{id}', [RegistrationFormController::class, 'destroy'])->name('registrations.destroy');
+        });
     });
 
     // Teacher Routes
@@ -94,3 +108,8 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+// Public Registration Routes (No Auth Required)
+Route::get('/register/{slug}', [RegistrationController::class, 'show'])->name('registration.show');
+Route::post('/register/{slug}', [RegistrationController::class, 'submit'])->name('registration.submit');
+Route::get('/student-lookup', [RegistrationController::class, 'lookup'])->name('registration.lookup');
