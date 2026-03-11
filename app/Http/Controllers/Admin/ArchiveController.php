@@ -23,7 +23,15 @@ class ArchiveController extends Controller
         $student = Student::withTrashed()->findOrFail($id);
         $student->restore();
 
-        return redirect()->back()->with('success', 'Student restored successfully.');
+        return redirect()->back()->with('success', 'تم استعادة الطالب بنجاح.');
+    }
+
+    public function destroy($id)
+    {
+        $student = Student::withTrashed()->findOrFail($id);
+        $student->forceDelete();
+
+        return redirect()->back()->with('success', 'تم حذف الطالب نهائياً من النظام.');
     }
 }
 

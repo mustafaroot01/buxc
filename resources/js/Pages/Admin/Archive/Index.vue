@@ -8,12 +8,15 @@ import {
     CalendarIcon, 
     SearchIcon,
     HistoryIcon,
-    InboxIcon
+    InboxIcon,
+    Trash2Icon,
+    AlertTriangleIcon
 } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import Modal from '@/Components/Modal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
+import DangerButton from '@/Components/DangerButton.vue';
 
 const props = defineProps<{
     students: {
@@ -47,21 +50,38 @@ const filteredStudents = computed(() => {
 });
 
 const confirmingStudentRestoration = ref(false);
-const studentToRestore = ref<any>(null);
+const confirmingStudentDeletion = ref(false);
+const studentToProcess = ref<any>(null);
 
 const restoreStudent = (student: any) => {
-    studentToRestore.value = student;
+    studentToProcess.value = student;
     confirmingStudentRestoration.value = true;
+};
+
+const deleteStudentPermanently = (student: any) => {
+    studentToProcess.value = student;
+    confirmingStudentDeletion.value = true;
 };
 
 const closeModal = () => {
     confirmingStudentRestoration.value = false;
-    studentToRestore.value = null;
+    confirmingStudentDeletion.value = false;
+    studentToProcess.value = null;
 };
 
 const confirmRestoreStudent = () => {
-    if (studentToRestore.value) {
-        form.post(route('admin.archive.restore', studentToRestore.value.id), {
+    if (studentToProcess.value) {
+        form.post(route('admin.archive.restore', studentToProcess.value.id), {
+            preserveScroll: true,
+            onSuccess: () => closeModal(),
+            onFinish: () => closeModal(),
+        });
+    }
+};
+
+const confirmPermanentDelete = () => {
+    if (studentToProcess.value) {
+        form.delete(route('admin.archive.destroy', studentToProcess.value.id), {
             preserveScroll: true,
             onSuccess: () => closeModal(),
             onFinish: () => closeModal(),
@@ -175,14 +195,24 @@ const formatDate = (dateString: string) => {
                                         </div>
                                     </td>
                                     <td class="px-8 py-5 whitespace-nowrap text-left">
-                                        <button 
-                                            @click="restoreStudent(student)" 
-                                            :disabled="form.processing"
-                                            class="inline-flex items-center px-4 py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl text-xs font-black transition-all duration-300 shadow-sm border border-emerald-100 disabled:opacity-50"
-                                        >
-                                            <RotateCcwIcon class="w-3.5 h-3.5 ml-2" />
-                                            استعادة الطالب
-                                        </button>
+                                        <div class="flex items-center justify-end gap-2">
+                                            <button 
+                                                @click="restoreStudent(student)" 
+                                                :disabled="form.processing"
+                                                class="inline-flex items-center px-4 py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl text-xs font-black transition-all duration-300 shadow-sm border border-emerald-100 disabled:opacity-50"
+                                            >
+                                                <RotateCcwIcon class="w-3.5 h-3.5 ml-2" />
+                                                استعادة
+                                            </button>
+                                            <button 
+                                                @click="deleteStudentPermanently(student)" 
+                                                :disabled="form.processing"
+                                                class="inline-flex items-center p-2 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-xl text-xs font-black transition-all duration-300 shadow-sm border border-rose-100 disabled:opacity-50"
+                                                title="حذف نهائي"
+                                            >
+                                                <Trash2Icon class="w-4 h-4" />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                                 
@@ -223,7 +253,7 @@ const formatDate = (dateString: string) => {
                 </h3>
                 
                 <p class="text-center text-gray-500 text-sm leading-relaxed mb-8">
-                    هل أنت متأكد من رغبتك في استعادة الطالب <span class="font-bold text-gray-900">{{ studentToRestore?.first_name }}</span> إلى القائمة النشطة؟ سيتمكن من تسجيل الحضور في المحاضرات القادمة.
+                    هل أنت متأكد من رغبتك في استعادة الطالب <span class="font-bold text-gray-900">{{ studentToProcess?.first_name }}</span> إلى القائمة النشطة؟ سيتمكن من تسجيل الحضور في المحاضرات القادمة.
                 </p>
 
                 <div class="flex items-center gap-3">
@@ -244,9 +274,54 @@ const formatDate = (dateString: string) => {
                 </div>
             </div>
         </Modal>
+
+        <!-- Permanent Deletion Modal -->
+        <Modal :show="confirmingStudentDeletion" @close="closeModal" maxWidth="md">
+            <div class="p-8">
+                <div class="flex items-center justify-center w-16 h-16 mx-auto mb-6 bg-rose-50 rounded-full">
+                    <AlertTriangleIcon class="w-8 h-8 text-rose-600" />
+                </div>
+                
+                <h3 class="text-xl font-black text-center text-gray-900 mb-2">
+                    تأكيد الحذف النهائي
+                </h3>
+                
+                <p class="text-center text-rose-600 text-sm leading-relaxed mb-8 font-bold">
+                    تحذير: هذا الإجراء سيقوم بحذف الطالب <span class="bg-rose-100 px-1 rounded">{{ studentToProcess?.first_name }} {{ studentToProcess?.last_name }}</span> نهائياً من النظام. لا يمكن التراجع عن هذا الإجراء أبداً.
+                </p>
+
+                <div class="flex items-center gap-3">
+                    <DangerButton 
+                        class="flex-1 justify-center py-3 rounded-xl font-bold"
+                        @click="confirmPermanentDelete"
+                        :disabled="form.processing"
+                    >
+                        حذف نهائي للأبد
+                    </DangerButton>
+                    
+                    <SecondaryButton 
+                        class="flex-1 justify-center py-3 rounded-xl font-bold border-gray-200"
+                        @click="closeModal"
+                    >
+                        تراجع
+                    </SecondaryButton>
+                </div>
+            </div>
+        </Modal>
     </AuthenticatedLayout>
 </template>
 
 <style scoped>
-/* Custom transitions if needed */
+.animate-spin-slow {
+    animation: spin 3s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
 </style>
