@@ -11,12 +11,7 @@ use App\Http\Controllers\Admin\WarningController as AdminWarningController;
 use App\Http\Controllers\Teacher\WarningController as TeacherWarningController;
 
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
+    return redirect()->route('login');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
