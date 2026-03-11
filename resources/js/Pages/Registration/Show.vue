@@ -96,10 +96,10 @@ const downloadQr = () => {
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
                     <h3 class="text-base font-bold text-gray-800 mb-1">رمز QR الخاص بك</h3>
                     <p class="text-sm text-gray-400 mb-6">احتفظ بهذا الرمز. سيُستخدم لتسجيل حضورك في المحاضرات.</p>
-                    <div id="success-qr-code" class="inline-block bg-white p-4 rounded-2xl border border-gray-100 shadow-sm mb-6">
+                    <div id="success-qr-code" class="inline-block bg-white p-5 rounded-2xl border border-gray-100 shadow-sm mb-6">
                         <QRCodeVue3
-                            :width="220"
-                            :height="220"
+                            :width="320"
+                            :height="320"
                             :value="submission.qr_payload"
                             :qrOptions="{ typeNumber: '0', mode: 'Byte', errorCorrectionLevel: 'Q' }"
                             :dotsOptions="{ type: 'rounded', color: '#111827' }"
@@ -113,7 +113,7 @@ const downloadQr = () => {
                             تحميل رمز QR
                         </button>
                     </div>
-                    <p class="text-xs text-gray-400 mt-4">يمكنك ايضا الرجوع لاسترجاع رمز QR لاحقاً من خلال رابط البحث بالرقم الجامعي.</p>
+                    <p class="text-xs text-gray-400 mt-4">يمكنك استرجاع رمز QR لاحقاً من خلال زر البحث ادناه.</p>
                 </div>
             </div>
 
@@ -199,6 +199,21 @@ const downloadQr = () => {
                         </div>
                     </form>
                 </div>
+            </div>
+
+            <!-- Search by ID Banner (always visible) -->
+            <div class="mt-6 bg-white rounded-2xl shadow-sm border border-indigo-100 p-5 flex flex-col sm:flex-row items-center gap-4 justify-between">
+                <div>
+                    <p class="font-bold text-gray-800 text-sm">هل سجلت مسبقاً؟</p>
+                    <p class="text-xs text-gray-400 mt-0.5">ابحث برقمك الجامعي لاسترجاع رمز QR الخاص بك وتحميله.</p>
+                </div>
+                <a :href="route('registration.lookup')"
+                    class="flex-shrink-0 inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 rounded-xl transition-all">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    البحث بالرقم الجامعي
+                </a>
             </div>
 
         </main>
