@@ -173,6 +173,8 @@ const downloadQr = () => {
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-1.5">الرقم الجامعي <span class="text-red-500">*</span></label>
                             <input v-model="submitting.student_external_id" type="text" required dir="ltr"
+                                inputmode="numeric" pattern="[0-9]*"
+                                @input="submitting.student_external_id = submitting.student_external_id.replace(/[^0-9]/g, '')"
                                 class="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-3 text-sm text-left font-mono focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all"
                                 placeholder="ادخل رقمك الجامعي" />
                             <p class="text-xs text-gray-400 mt-1.5 leading-relaxed">
