@@ -5,7 +5,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import Modal from '@/Components/Modal.vue';
 import DangerButton from '@/Components/DangerButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import QRCodeVue3 from 'qrcode-vue3';
 
 const props = defineProps<{
@@ -34,7 +34,18 @@ const props = defineProps<{
         per_page: number;
         total: number;
     };
+    filters?: { date?: string };
 }>();
+
+const filterDate = ref(props.filters?.date || '');
+
+watch(filterDate, () => {
+    router.get(
+        route('admin.students.show', props.student.id),
+        { date: filterDate.value },
+        { preserveState: true, preserveScroll: true, replace: true }
+    );
+});
 
 const printQrCode = () => {
     window.print();
@@ -162,11 +173,15 @@ const confirmDeleteStudent = () => {
 
                         <!-- Full Attendance History -->
                         <div class="bg-white rounded-[1.5rem] shadow-sm border border-gray-100/60 flex flex-col overflow-hidden">
-                            <div class="p-6 border-b border-gray-50">
+                            <div class="p-4 sm:p-6 border-b border-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white z-10 relative">
                                 <h3 class="text-lg font-bold text-gray-900 flex items-center">
                                     سجل المحاضرات الأخيرة
                                     <MapPinIcon class="w-5 h-5 mr-2 text-indigo-500" />
                                 </h3>
+                                <div class="flex items-center gap-3">
+                                    <label for="date-filter" class="text-xs font-bold text-gray-500 whitespace-nowrap">تصفية بالتاريخ:</label>
+                                    <input id="date-filter" type="date" v-model="filterDate" class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block p-2 w-full sm:w-auto transition-colors cursor-pointer shadow-sm">
+                                </div>
                             </div>
                             
                             <div class="overflow-x-auto">
@@ -219,21 +234,26 @@ const confirmDeleteStudent = () => {
                             </div>
                             
                             <!-- Pagination -->
-                            <div class="p-6 border-t border-gray-50 flex items-center justify-between" v-if="attendances.total > 10">
-                                <p class="text-sm text-gray-500">
+                            <div class="p-6 border-t border-gray-50 flex flex-col sm:flex-row items-center justify-between gap-4" v-if="attendances.total > 10">
+                                <p class="text-sm text-gray-500 font-medium">
                                     عرض {{ attendances.data.length }} من أصل {{ attendances.total }} سجل
                                 </p>
-                                <div class="flex text-left items-center justify-end gap-1" dir="ltr">
+                                <div class="flex flex-wrap text-left items-center justify-center sm:justify-end gap-1.5" dir="ltr">
                                     <template v-for="(link, index) in attendances.links" :key="index">
+                                        <!-- Clickable Link -->
                                         <Link 
                                             v-if="link.url"
                                             :href="link.url" 
                                             preserve-scroll
-                                            class="w-8 h-8 flex items-center justify-center rounded-lg border text-sm font-medium transition-colors"
-                                            :class="link.active ? 'bg-amber-500 text-white border-amber-500' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'"
+                                            class="h-9 px-3 flex items-center justify-center rounded-lg border text-sm font-bold transition-all whitespace-nowrap shadow-sm min-w-[2.25rem]"
+                                            :class="link.active ? 'bg-indigo-600 text-white border-transparent' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:text-indigo-600'"
                                             v-html="link.label"
                                         />
-                                        <span v-else class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-100 bg-gray-50 text-gray-400 text-sm font-medium" v-html="link.label"></span>
+                                        <!-- Active or Disabled State -->
+                                        <span v-else 
+                                            class="h-9 px-3 flex items-center justify-center rounded-lg border border-gray-100 bg-gray-50/50 text-gray-400 text-sm font-medium whitespace-nowrap min-w-[2.25rem]" 
+                                            v-html="link.label">
+                                        </span>
                                     </template>
                                 </div>
                             </div>

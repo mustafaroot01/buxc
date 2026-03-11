@@ -12,10 +12,18 @@ use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Concerns\WithCustomChunkSize;
 
-class AttendanceExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSize, WithStyles, WithEvents
+class AttendanceExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSize, WithStyles, WithEvents, WithCustomChunkSize
 {
     protected $filters;
+
+    public function chunkSize(): int
+    {
+        // Enforce a strict chunk size to completely prevent memory leaks
+        // when exporting massive attendance reports (e.g. 50,000+ records)
+        return 1000;
+    }
 
     public function __construct($filters = [])
     {

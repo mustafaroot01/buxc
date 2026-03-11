@@ -11,7 +11,7 @@ use App\Traits\LogsArabicActivity;
 
 class AcademicGroup extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes, LogsArabicActivity;
+    use HasFactory, HasUuids, SoftDeletes, LogsArabicActivity, \App\Traits\InvalidatesAcademicCache;
 
     public function getArabicModelLabel(): string { return 'مجموعة'; }
     public function getArabicName(): string { return $this->name; }

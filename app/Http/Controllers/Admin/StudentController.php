@@ -133,14 +133,18 @@ class StudentController extends Controller
             'warnings'
         ]);
 
-        $attendances = $student->attendances()
-            ->with('lecture.subject')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        $query = $student->attendances()->with('lecture.subject')->orderBy('created_at', 'desc');
+        
+        if ($request->has('date') && $request->date != '') {
+            $query->whereDate('created_at', $request->date);
+        }
+
+        $attendances = $query->paginate(10)->withQueryString();
 
         return Inertia::render('Admin/Students/Show', [
             'student' => $student,
             'attendances' => $attendances,
+            'filters' => $request->only('date'),
         ]);
     }
 

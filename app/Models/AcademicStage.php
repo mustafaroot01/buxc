@@ -11,7 +11,7 @@ use App\Traits\LogsArabicActivity;
 
 class AcademicStage extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes, LogsArabicActivity;
+    use HasFactory, HasUuids, SoftDeletes, LogsArabicActivity, \App\Traits\InvalidatesAcademicCache;
 
     public function getArabicModelLabel(): string { return 'مرحلة دراسية'; }
     public function getArabicName(): string { return $this->name; }

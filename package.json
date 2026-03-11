@@ -4,7 +4,8 @@
     "type": "module",
     "scripts": {
         "build": "vue-tsc && vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "prod:setup": "php artisan optimize:clear && php artisan optimize && php artisan view:cache"
     },
     "devDependencies": {
         "@inertiajs/vue3": "^2.0.0",

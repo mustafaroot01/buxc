@@ -68,12 +68,11 @@ const localSummary = computed(() => ({
     absent:  localStudents.value.filter(s => s.status === 'absent').length,
 }));
 
-// Check if lecture is older than 24 hours
+// Lock edits if lecture is older than 24 hours (regardless of status)
 const isLocked = computed(() => {
     const start = new Date(props.lecture.start_time).getTime();
-    const now = new Date().getTime();
-    const hours = Math.abs(now - start) / 36e5;
-    return hours >= 24;
+    const diffHours = (Date.now() - start) / 36e5;
+    return diffHours >= 24;
 });
 
 // ── Manual attendance toggle ─────────────────────────────────────────────────
@@ -268,7 +267,7 @@ const formatTime = (dt: string) =>
                     </div>
                     <div v-else class="mx-4 mt-3 mb-2 px-3 py-2 bg-amber-50 rounded-xl border border-amber-200 flex items-center gap-2 text-xs text-amber-700">
                         <HandIcon class="w-3.5 h-3.5 flex-shrink-0" />
-                        <span>اضغط على <strong>غائب</strong> لتسجيله يدوياً · اضغط على <strong>حاضر</strong> لإلغاء حضوره</span>
+                        <span>اضغط على زر الحالة لتغييرها يدوياً · يمكن التعديل خلال 24 ساعة من بدء المحاضرة</span>
                     </div>
 
                     <!-- Table Head (Desktop only) -->

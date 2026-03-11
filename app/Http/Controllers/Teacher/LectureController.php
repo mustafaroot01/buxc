@@ -58,15 +58,21 @@ class LectureController extends Controller
             return $lecture;
         });
 
+        $version = \Illuminate\Support\Facades\Cache::get('academic_structure_version', 1);
+        
         // Get unique subjects the teacher has taught or is assigned to for filtering
-        $subjects = Subject::where('teacher_id', $teacherId)->get(['id', 'name']);
+        $subjects = \Illuminate\Support\Facades\Cache::remember("teacher_{$teacherId}_subjects_list_v{$version}", 60 * 24, function () use ($teacherId) {
+            return Subject::where('teacher_id', $teacherId)->get(['id', 'name']);
+        });
         
         // Get unique stages the teacher is teaching based on groups of their subjects
-        $stages = AcademicStage::whereHas('groups', function($q) use ($teacherId) {
-            $q->whereHas('subjects', function($q2) use ($teacherId) {
-                $q2->where('teacher_id', $teacherId);
-            });
-        })->get(['id', 'name']);
+        $stages = \Illuminate\Support\Facades\Cache::remember("teacher_{$teacherId}_stages_list_v{$version}", 60 * 24, function () use ($teacherId) {
+            return AcademicStage::whereHas('groups', function($q) use ($teacherId) {
+                $q->whereHas('subjects', function($q2) use ($teacherId) {
+                    $q2->where('teacher_id', $teacherId);
+                });
+            })->get(['id', 'name']);
+        });
 
         return Inertia::render('Teacher/Lectures/Index', [
             'lectures' => $lectures,
@@ -84,10 +90,12 @@ class LectureController extends Controller
         $teacherId = Auth::id();
 
         // Get subjects assigned to this teacher with their specifically assigned groups
-        // Also load the stage for each subject
-        $subjects = Subject::with(['stage', 'groups'])
-            ->where('teacher_id', $teacherId)
-            ->get();
+        $version = \Illuminate\Support\Facades\Cache::get('academic_structure_version', 1);
+        $subjects = \Illuminate\Support\Facades\Cache::remember("teacher_{$teacherId}_subjects_structure_v{$version}", 60 * 24, function () use ($teacherId) {
+            return Subject::with(['stage', 'groups'])
+                ->where('teacher_id', $teacherId)
+                ->get();
+        });
 
         return Inertia::render('Teacher/Lectures/Create', [
             'subjects' => $subjects,
@@ -211,26 +219,55 @@ class LectureController extends Controller
             ->where('student_id', $studentId)
             ->first();
 
-        if ($existing) {
-            // If already present manually, remove the attendance (toggle off)
-            $existing->delete();
-            return response()->json(['success' => true, 'action' => 'removed', 'message' => 'تم حذف الحضور.']);
+        if ($existing && $existing->status === 'present') {
+            // Toggle to absent
+            if ($lecture->status === 'closed') {
+                // Lecture is closed: update to 'absent' to maintain the record
+                $existing->update([
+                    'status'          => 'absent',
+                    'check_in_method' => null,
+                    'check_in_at'     => null,
+                ]);
+            } else {
+                // Lecture still active: just delete (absence = no record)
+                $existing->delete();
+            }
+            return response()->json(['success' => true, 'action' => 'removed', 'message' => 'تم تغيير الحالة إلى غائب.']);
         }
 
-        // Mark as present manually
-        $attendance = Attendance::create([
-            'lecture_id' => $lectureId,
-            'student_id' => $studentId,
-            'status' => 'present',
-            'check_in_method' => 'manual',
-            'check_in_at' => now(),
-        ]);
+        // If we reach here, we want to mark as present.
+        // If there's an 'absent' record, we update it. If no record, we create one.
+        if ($existing) {
+            $existing->update([
+                'status' => 'present',
+                'check_in_method' => 'manual',
+                'check_in_at' => now(),
+            ]);
+            $attendance = $existing;
+        } else {
+            $attendance = Attendance::create([
+                'lecture_id' => $lectureId,
+                'student_id' => $studentId,
+                'status' => 'present',
+                'check_in_method' => 'manual',
+                'check_in_at' => now(),
+            ]);
+        }
+
+        // --- Logic to resolve warnings when marking present ---
+        if ($student->consecutive_absences > 0) {
+            $student->update(['consecutive_absences' => 0]);
+
+            \App\Models\Warning::where('student_id', $student->id)
+                ->whereNull('resolved_at')
+                ->update(['resolved_at' => now()]);
+        }
 
         return response()->json([
             'success' => true,
             'action' => 'added',
             'attendance_id' => $attendance->id,
-            'message' => 'تم تسجيل الحضور يدوياً.',
+            'message' => 'تم تسجيل الحضور بنجاح.',
         ]);
     }
 

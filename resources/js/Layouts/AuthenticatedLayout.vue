@@ -44,6 +44,7 @@ const navigation = [
     { name: 'المراحل', href: route('admin.stages.index'), current: route().current('admin.stages.*'), icon: LayersIcon, roles: ['admin', 'super_admin'] },
     { name: 'المجموعات', href: route('admin.groups.index'), current: route().current('admin.groups.*'), icon: UsersIcon, roles: ['admin', 'super_admin'] },
     { name: 'المواد', href: route('admin.subjects.index'), current: route().current('admin.subjects.*'), icon: BookOpenIcon, roles: ['admin', 'super_admin'] },
+    { name: 'المحاضرات', href: route('admin.lectures.index'), current: route().current('admin.lectures.*'), icon: BookOpenIcon, roles: ['admin', 'super_admin'] },
     { name: 'طباعة QR', href: route('admin.print.qrs'), current: route().current('admin.print.qrs'), icon: QrCodeIcon, roles: ['admin', 'super_admin'] },
     { name: 'التقارير', href: route('admin.reports.index'), current: route().current('admin.reports.*'), icon: FileBarChartIcon, roles: ['admin', 'super_admin'] },
     { name: 'تنبيهات الغياب', href: route('admin.warnings.index'), current: route().current('admin.warnings.*'), icon: AlertTriangleIcon, roles: ['admin', 'super_admin'] },
@@ -86,7 +87,7 @@ const hasRole = (userTokens: any, navRoles: string[], excludeRoles?: string[]) =
                                 <div class="flex h-16 shrink-0 items-center justify-between border-b border-gray-100 mt-2">
                                     <Link :href="route('dashboard')" class="flex items-center gap-2.5">
                                         <div class="flex items-center justify-center p-1 bg-teal-50 rounded-lg">
-                                            <img v-if="settings?.login_logo" :src="settings.login_logo" class="h-9 w-auto object-contain" />
+                                            <img v-if="settings?.login_logo" :src="settings.login_logo" key="mobile-sidebar-logo" fetchpriority="high" class="h-9 w-auto object-contain" />
                                             <ApplicationLogo v-else class="h-9 w-auto fill-current text-teal-600" />
                                         </div>
                                         <span class="text-lg font-black text-gray-900 tracking-tight leading-none">{{ settings?.school_name || 'النظام الأكاديمي' }}</span>
@@ -101,7 +102,7 @@ const hasRole = (userTokens: any, navRoles: string[], excludeRoles?: string[]) =
                                             <ul role="list" class="-mx-2 space-y-1">
                                                 <template v-for="item in navigation" :key="item.name">
                                                     <li v-if="hasRole($page.props.auth.user.roles, item.roles, item.excludeRoles)">
-                                                        <Link :href="item.href" :class="[item.current ? 'bg-teal-50 text-teal-600 font-bold' : 'text-gray-700 hover:text-teal-600 hover:bg-gray-50', 'group flex gap-x-3 rounded-xl p-2.5 text-sm leading-6 transition-all']">
+                                                        <Link :href="item.href" prefetch :class="[item.current ? 'bg-teal-50 text-teal-600 font-bold' : 'text-gray-700 hover:text-teal-600 hover:bg-gray-50', 'group flex gap-x-3 rounded-xl p-2.5 text-sm leading-6 transition-all']">
                                                             <component :is="item.icon" :class="[item.current ? 'text-teal-600' : 'text-gray-400 group-hover:text-teal-600', 'h-5 w-5 shrink-0 transition-colors']" aria-hidden="true" />
                                                             {{ item.name }}
                                                         </Link>
@@ -136,7 +137,7 @@ const hasRole = (userTokens: any, navRoles: string[], excludeRoles?: string[]) =
                 <div class="flex h-16 shrink-0 items-center mt-2 border-b border-gray-100">
                     <Link :href="route('dashboard')" class="flex items-center gap-3">
                         <div class="flex items-center justify-center p-1.5 bg-teal-50 rounded-xl shadow-sm border border-teal-100/50">
-                            <img v-if="settings?.login_logo" :src="settings.login_logo" class="h-10 w-auto object-contain" />
+                            <img v-if="settings?.login_logo" :src="settings.login_logo" key="desktop-sidebar-logo" fetchpriority="high" class="h-10 w-auto object-contain" />
                             <ApplicationLogo v-else class="h-10 w-auto fill-current text-teal-600" />
                         </div>
                         <span class="text-[17px] font-black text-gray-900 tracking-tight leading-snug drop-shadow-sm">{{ settings?.school_name || 'النظام الأكاديمي' }}</span>
@@ -148,7 +149,7 @@ const hasRole = (userTokens: any, navRoles: string[], excludeRoles?: string[]) =
                             <ul role="list" class="-mx-2 space-y-1.5">
                                 <template v-for="item in navigation" :key="item.name">
                                     <li v-if="hasRole($page.props.auth.user.roles, item.roles, item.excludeRoles)">
-                                        <Link :href="item.href" :class="[item.current ? 'bg-teal-50 text-teal-700 font-bold border-e-4 border-teal-600' : 'text-gray-600 font-medium hover:text-teal-700 hover:bg-teal-50/50 border-e-4 border-transparent hover:border-teal-300', 'group flex items-center gap-x-3 rounded-s-xl p-3 text-[15px] leading-6 transition-all duration-200']">
+                                        <Link :href="item.href" prefetch :class="[item.current ? 'bg-teal-50 text-teal-700 font-bold border-e-4 border-teal-600' : 'text-gray-600 font-medium hover:text-teal-700 hover:bg-teal-50/50 border-e-4 border-transparent hover:border-teal-300', 'group flex items-center gap-x-3 rounded-s-xl p-3 text-[15px] leading-6 transition-all duration-200']">
                                             <component :is="item.icon" :class="[item.current ? 'text-teal-600' : 'text-gray-400 group-hover:text-teal-500', 'h-5 w-5 shrink-0 transition-colors']" aria-hidden="true" />
                                             {{ item.name }}
                                         </Link>

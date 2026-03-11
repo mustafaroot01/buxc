@@ -2,14 +2,14 @@
 
 namespace App\Jobs;
 
+use App\Models\Attendance;
+use App\Models\Lecture;
+use App\Models\Setting;
+use App\Models\Student;
+use App\Models\Warning;
+use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use App\Models\Lecture;
-use App\Models\Student;
-use App\Models\Attendance;
-use App\Models\Warning;
-use App\Models\Setting;
-use Carbon\Carbon;
 
 class ProcessLectureAbsences implements ShouldQueue
 {
@@ -25,14 +25,13 @@ class ProcessLectureAbsences implements ShouldQueue
         $this->lecture = $lecture;
     }
 
-
     /**
      * Execute the job.
      */
     public function handle(): void
     {
         $lecture = $this->lecture;
-        
+
         // Find all students that belong to this lecture's group
         $students = Student::where('group_id', $lecture->group_id)
             ->get();
@@ -47,7 +46,7 @@ class ProcessLectureAbsences implements ShouldQueue
                 ->where('student_id', $student->id)
                 ->exists();
 
-            if (!$attended) {
+            if (! $attended) {
                 // Mark them absent
                 Attendance::create([
                     'lecture_id' => $lecture->id,
@@ -66,7 +65,7 @@ class ProcessLectureAbsences implements ShouldQueue
                         ->whereNull('resolved_at')
                         ->exists();
 
-                    if (!$hasActiveWarning) {
+                    if (! $hasActiveWarning) {
                         // Determine the level based on previous un-resolved or historically resolved warnings
                         $previousWarningsCount = Warning::where('student_id', $student->id)->count();
                         $newLevel = $previousWarningsCount + 1;
@@ -84,4 +83,3 @@ class ProcessLectureAbsences implements ShouldQueue
         }
     }
 }
-

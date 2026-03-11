@@ -2,7 +2,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { HistoryIcon, SearchIcon } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 const props = defineProps<{
     activities: any;
@@ -14,6 +14,14 @@ const search = ref(props.filters.search || '');
 const submitSearch = () => {
     router.get(route('admin.audit.index'), { search: search.value }, { preserveState: true, replace: true });
 };
+
+let searchTimeout: any;
+watch(search, () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        submitSearch();
+    }, 300);
+});
 
 // Map event names to Arabic
 const eventLabel = (desc: string): { label: string; color: string } => {

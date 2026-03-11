@@ -1,14 +1,11 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
-use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
-
 use App\Http\Controllers\Admin\WarningController as AdminWarningController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
 use App\Http\Controllers\Teacher\WarningController as TeacherWarningController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -18,7 +15,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Admin Routes
     Route::middleware(['role:admin|super_admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-        
+
         // Students Management
         Route::resource('students', \App\Http\Controllers\Admin\StudentController::class);
 
@@ -28,6 +25,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('groups', \App\Http\Controllers\Admin\AcademicGroupController::class);
         Route::resource('subjects', \App\Http\Controllers\Admin\SubjectController::class);
 
+        // Lectures Monitor (read-only)
+        Route::get('/lectures', [\App\Http\Controllers\Admin\LectureController::class, 'index'])->name('lectures.index');
 
         // QR Print Center
         Route::get('/print-qrs', [\App\Http\Controllers\Admin\QrPrintController::class, 'index'])->name('print.qrs');
@@ -47,22 +46,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Reports & Exporting
         Route::get('/reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
         Route::get('/reports/export', [\App\Http\Controllers\Admin\ReportController::class, 'export'])->name('reports.export');
+        Route::get('/reports/download_export/{file}', [\App\Http\Controllers\Admin\ReportController::class, 'downloadExport'])->name('reports.download_export');
 
         // Warnings
         Route::get('/warnings', [AdminWarningController::class, 'index'])->name('warnings.index');
         Route::get('/warnings/export', [AdminWarningController::class, 'export'])->name('warnings.export');
     });
 
-
-
-
-
-
-
     // Teacher Routes
     Route::middleware(['role:teacher'])->prefix('teacher')->name('teacher.')->group(function () {
         Route::get('/dashboard', [TeacherDashboardController::class, 'index'])->name('dashboard');
-        
+
         // Lectures Management
         Route::get('/lectures', [\App\Http\Controllers\Teacher\LectureController::class, 'index'])->name('lectures.index');
         Route::get('/lectures/create', [\App\Http\Controllers\Teacher\LectureController::class, 'create'])->name('lectures.create');
@@ -81,18 +75,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/warnings', [TeacherWarningController::class, 'index'])->name('warnings.index');
     });
 
-
-
     // Fallback Dashboard Route for generic redirection
     Route::get('/dashboard', function () {
         if (auth()->user()->hasRole('admin') || auth()->user()->hasRole('super_admin')) {
             return redirect()->route('admin.dashboard');
         }
+
         return redirect()->route('teacher.dashboard');
     })->name('dashboard');
 
 });
-
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

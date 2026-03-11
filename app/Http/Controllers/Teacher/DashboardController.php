@@ -15,10 +15,13 @@ class DashboardController extends Controller
         $user = auth()->user();
         $today = Carbon::today();
 
-        // Get this teacher's subjects with all their assigned groups
-        $mySubjects = Subject::with(['stage', 'groups'])
-            ->where('teacher_id', $user->id)
-            ->get();
+        // Cache the teacher's structure (subjects, stages, groups) for 24 hours to reduce DB pressure
+        $version = \Illuminate\Support\Facades\Cache::get('academic_structure_version', 1);
+        $mySubjects = \Illuminate\Support\Facades\Cache::remember('teacher_'.$user->id.'_subjects_structure_v'.$version, 60 * 24, function () use ($user) {
+            return Subject::with(['stage', 'groups'])
+                ->where('teacher_id', $user->id)
+                ->get();
+        });
 
         // Count total students across all my groups
         $myGroupIds = $mySubjects->flatMap(fn ($s) => $s->groups)->pluck('id')->unique();
