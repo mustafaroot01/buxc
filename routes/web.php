@@ -27,6 +27,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Lectures Monitor (read-only)
         Route::get('/lectures', [\App\Http\Controllers\Admin\LectureController::class, 'index'])->name('lectures.index');
+        Route::get('/lectures/{id}/export', [\App\Http\Controllers\Admin\LectureController::class, 'export'])->name('lectures.export');
 
         // QR Print Center
         Route::get('/print-qrs', [\App\Http\Controllers\Admin\QrPrintController::class, 'index'])->name('print.qrs');

@@ -77,4 +77,17 @@ class LectureController extends Controller
             'filters'  => $request->only('search', 'status', 'teacher_id', 'stage_id', 'group_id', 'study_type'),
         ]);
     }
+
+    public function export($id)
+    {
+        $lecture = Lecture::with(['subject', 'group.stage', 'teacher'])->findOrFail($id);
+        
+        $date = $lecture->start_time->format('Y-m-d');
+        $fileName = "attendance_{$lecture->subject->name}_{$date}.xlsx";
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\LectureAttendanceExport($id), 
+            $fileName
+        );
+    }
 }

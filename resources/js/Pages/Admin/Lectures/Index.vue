@@ -4,7 +4,7 @@ import { Head, router } from '@inertiajs/vue3';
 import {
     BookOpenIcon, SearchIcon, FilterIcon,
     CheckCircle2Icon, XCircleIcon, ClockIcon,
-    LayersIcon, XIcon
+    LayersIcon, XIcon, DownloadIcon
 } from 'lucide-vue-next';
 import Pagination from '@/Components/Pagination.vue';
 import { ref, watch, computed } from 'vue';
@@ -105,6 +105,10 @@ const formatDate = (dt: string) =>
 
 const formatTime = (dt: string) =>
     dt ? new Date(dt).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) : '—';
+
+const downloadLecture = (id: string) => {
+    window.location.href = route('admin.lectures.export', id);
+};
 </script>
 
 <template>
@@ -297,6 +301,7 @@ const formatTime = (dt: string) =>
                         <div class="col-span-1 text-center">الحضور</div>
                         <div class="col-span-1 text-center">الغياب</div>
                         <div class="col-span-1 text-center">الحالة</div>
+                        <div class="col-span-1 text-center">الإجراء</div>
                     </div>
 
                     <!-- Rows -->
@@ -366,7 +371,6 @@ const formatTime = (dt: string) =>
                             </div>
                         </div>
 
-                        <!-- Status -->
                         <div class="col-span-1 flex items-center justify-center">
                             <span :class="lecture.status === 'active'
                                 ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
@@ -374,6 +378,17 @@ const formatTime = (dt: string) =>
                                   class="text-[10px] font-black px-3 py-1 rounded-full border whitespace-nowrap">
                                 {{ lecture.status === 'active' ? '🟢 نشطة' : '🔴 مغلقة' }}
                             </span>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="col-span-1 flex items-center justify-center">
+                            <button v-if="lecture.status === 'closed'"
+                                    @click="downloadLecture(lecture.id)"
+                                    class="p-1.5 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors"
+                                    title="تحميل التقرير">
+                                <DownloadIcon class="w-4 h-4" />
+                            </button>
+                            <span v-else class="text-xs text-gray-300">—</span>
                         </div>
                     </div>
 
