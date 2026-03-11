@@ -47,7 +47,7 @@ const downloadQr = () => {
 <template>
     <Head :title="form.title" />
 
-    <div class="min-h-screen bg-gradient-to-br from-teal-50 via-white to-indigo-50 flex flex-col" dir="rtl">
+    <div class="min-h-screen bg-gradient-to-br from-teal-50 via-white to-emerald-50 flex flex-col" dir="rtl">
 
         <!-- Header -->
         <header class="bg-white/80 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-10">
@@ -119,7 +119,7 @@ const downloadQr = () => {
 
             <!-- FORM STATE -->
             <div v-else class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="h-1.5 bg-gradient-to-r from-teal-500 to-indigo-500" />
+                <div class="h-1.5 bg-gradient-to-r from-teal-500 to-emerald-500" />
                 <div class="p-7">
                     <div class="mb-7 p-4 bg-teal-50 border border-teal-100 rounded-xl">
                         <p class="text-sm text-teal-800 font-medium leading-relaxed">
@@ -193,7 +193,7 @@ const downloadQr = () => {
                         <!-- Submit -->
                         <div class="pt-2">
                             <button type="submit" :disabled="submitting.processing"
-                                class="w-full py-3.5 text-base font-bold text-white bg-gradient-to-r from-teal-600 to-indigo-600 rounded-xl shadow-lg hover:from-teal-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                                class="w-full py-3.5 text-base font-bold text-white bg-gradient-to-r from-teal-600 to-emerald-500 rounded-xl shadow-lg hover:from-teal-700 hover:to-emerald-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                                 {{ submitting.processing ? 'جاري التسجيل...' : 'تسجيل والحصول على رمز QR' }}
                             </button>
                         </div>
@@ -202,13 +202,13 @@ const downloadQr = () => {
             </div>
 
             <!-- Search by ID Banner (always visible) -->
-            <div class="mt-6 bg-white rounded-2xl shadow-sm border border-indigo-100 p-5 flex flex-col sm:flex-row items-center gap-4 justify-between">
+            <div class="mt-6 bg-white rounded-2xl shadow-sm border border-teal-100 p-5 flex flex-col sm:flex-row items-center gap-4 justify-between">
                 <div>
                     <p class="font-bold text-gray-800 text-sm">هل سجلت مسبقاً؟</p>
                     <p class="text-xs text-gray-400 mt-0.5">ابحث برقمك الجامعي لاسترجاع رمز QR الخاص بك وتحميله.</p>
                 </div>
                 <a :href="route('registration.lookup')"
-                    class="flex-shrink-0 inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 rounded-xl transition-all">
+                    class="flex-shrink-0 inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-100 rounded-xl transition-all">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>

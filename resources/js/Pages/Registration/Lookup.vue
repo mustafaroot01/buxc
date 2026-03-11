@@ -39,7 +39,7 @@ const downloadQr = () => {
 <template>
     <Head title="استرجاع رمز QR" />
 
-    <div class="min-h-screen bg-gradient-to-br from-teal-50 via-white to-indigo-50 flex flex-col" dir="rtl">
+    <div class="min-h-screen bg-gradient-to-br from-teal-50 via-white to-emerald-50 flex flex-col" dir="rtl">
 
         <!-- Header -->
         <header class="bg-white/80 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-10">
@@ -59,7 +59,7 @@ const downloadQr = () => {
                         class="flex-1 border border-gray-200 bg-gray-50 rounded-xl px-4 py-3 text-sm font-mono text-left focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all"
                         placeholder="ادخل رقمك الجامعي او رقم هاتفك" />
                     <button type="submit"
-                        class="px-6 py-3 text-sm font-bold text-white bg-gradient-to-r from-teal-600 to-indigo-600 rounded-xl hover:from-teal-700 hover:to-indigo-700 transition-all whitespace-nowrap">
+                        class="px-6 py-3 text-sm font-bold text-white bg-gradient-to-r from-teal-600 to-emerald-500 rounded-xl hover:from-teal-700 hover:to-emerald-600 transition-all whitespace-nowrap">
                         بحث
                     </button>
                 </form>
@@ -137,7 +137,7 @@ const downloadQr = () => {
                     </div>
                     <div>
                         <button @click="downloadQr"
-                            class="inline-flex items-center gap-2 px-8 py-3 text-sm font-bold text-white bg-gradient-to-r from-teal-600 to-indigo-600 rounded-xl shadow-md hover:from-teal-700 hover:to-indigo-700 transition-all">
+                            class="inline-flex items-center gap-2 px-8 py-3 text-sm font-bold text-white bg-gradient-to-r from-teal-600 to-emerald-500 rounded-xl shadow-md hover:from-teal-700 hover:to-emerald-600 transition-all">
                             تحميل رمز QR
                         </button>
                     </div>
