@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { ClipboardListIcon, PlusIcon, Trash2Icon, ExternalLinkIcon, ToggleLeftIcon, ToggleRightIcon, UsersIcon, CheckCircle2Icon, ClockIcon } from 'lucide-vue-next';
+import { ClipboardListIcon, PlusIcon, Trash2Icon, ExternalLinkIcon, ToggleLeftIcon, ToggleRightIcon, UsersIcon, CheckCircle2Icon, ClockIcon, AlertTriangleIcon } from 'lucide-vue-next';
 import { ref, computed, watch } from 'vue';
 
 const props = defineProps<{
@@ -11,6 +11,11 @@ const props = defineProps<{
 
 const showCreateModal = ref(false);
 const copiedSlug = ref<string | null>(null);
+
+// Delete confirm modal
+const showDeleteModal = ref(false);
+const formToDelete = ref<string | null>(null);
+const formTitleToDelete = ref('');
 
 const form = useForm({
     title: '',
@@ -49,10 +54,28 @@ const toggleForm = (id: string) => {
     router.post(route('admin.registrations.toggle', id));
 };
 
-const deleteForm = (id: string) => {
-    if (confirm('هل أنت متأكد من حذف هذه الاستمارة؟ سيتم حذف جميع الطلبات معها.')) {
-        router.delete(route('admin.registrations.destroy', id));
+const confirmDelete = (id: string, title: string) => {
+    formToDelete.value = id;
+    formTitleToDelete.value = title;
+    showDeleteModal.value = true;
+};
+
+const executeDelete = () => {
+    if (formToDelete.value) {
+        router.delete(route('admin.registrations.destroy', formToDelete.value), {
+            onFinish: () => {
+                showDeleteModal.value = false;
+                formToDelete.value = null;
+                formTitleToDelete.value = '';
+            }
+        });
     }
+};
+
+const cancelDelete = () => {
+    showDeleteModal.value = false;
+    formToDelete.value = null;
+    formTitleToDelete.value = '';
 };
 </script>
 
@@ -126,7 +149,7 @@ const deleteForm = (id: string) => {
                                 </button>
                                 <!-- View Submissions -->
                                 <a :href="route('admin.registrations.submissions', f.id)"
-                                    class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-colors border border-indigo-100">
+                                    class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-teal-700 bg-teal-50 hover:bg-teal-100 rounded-xl transition-colors border border-teal-100">
                                     <CheckCircle2Icon class="w-4 h-4" />
                                     مراجعة الطلبات
                                 </a>
@@ -138,7 +161,7 @@ const deleteForm = (id: string) => {
                                     {{ f.is_open ? 'إغلاق' : 'فتح' }}
                                 </button>
                                 <!-- Delete -->
-                                <button @click="deleteForm(f.id)"
+                                <button @click="confirmDelete(f.id, f.title)"
                                     class="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors border border-rose-100">
                                     <Trash2Icon class="w-4 h-4" />
                                 </button>
@@ -208,6 +231,68 @@ const deleteForm = (id: string) => {
                     </form>
                 </div>
             </div>
+        </Teleport>
+
+        <!-- Delete Confirm Modal -->
+        <Teleport to="body">
+            <Transition
+                enter-active-class="transition duration-200 ease-out"
+                enter-from-class="opacity-0"
+                enter-to-class="opacity-100"
+                leave-active-class="transition duration-150 ease-in"
+                leave-from-class="opacity-100"
+                leave-to-class="opacity-0">
+                <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" @click="cancelDelete" />
+                    <Transition
+                        enter-active-class="transition duration-200 ease-out"
+                        enter-from-class="opacity-0 scale-95"
+                        enter-to-class="opacity-100 scale-100">
+                        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md z-10 overflow-hidden">
+                            <!-- Red top stripe -->
+                            <div class="h-1.5 bg-gradient-to-r from-rose-500 to-red-400" />
+
+                            <div class="p-8">
+                                <!-- Icon -->
+                                <div class="flex justify-center mb-5">
+                                    <div class="w-16 h-16 rounded-full bg-rose-50 flex items-center justify-center">
+                                        <AlertTriangleIcon class="w-8 h-8 text-rose-500" />
+                                    </div>
+                                </div>
+
+                                <!-- Title -->
+                                <h3 class="text-xl font-black text-gray-900 text-center mb-2">تأكيد الحذف</h3>
+                                <p class="text-sm text-gray-500 text-center mb-2">
+                                    هل أنت متأكد من حذف الاستمارة
+                                </p>
+                                <p class="text-sm font-bold text-gray-800 text-center bg-gray-50 rounded-xl px-4 py-2.5 border border-gray-100 mb-5">
+                                    "{{ formTitleToDelete }}"
+                                </p>
+
+                                <!-- Warning note -->
+                                <div class="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 mb-6">
+                                    <p class="text-xs text-amber-700 font-medium leading-relaxed text-center">
+                                        سيتم حذف جميع طلبات التسجيل المرتبطة بهذه الاستمارة.
+                                        الطلاب الذين تمت الموافقة عليهم مسبقاً لن يتأثروا.
+                                    </p>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="flex gap-3">
+                                    <button @click="executeDelete"
+                                        class="flex-1 py-3 text-sm font-bold text-white bg-gradient-to-r from-rose-600 to-red-500 hover:from-rose-700 hover:to-red-600 rounded-xl transition-all shadow-sm">
+                                        نعم، احذف الاستمارة
+                                    </button>
+                                    <button @click="cancelDelete"
+                                        class="flex-1 py-3 text-sm font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all">
+                                        إلغاء
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </Transition>
+                </div>
+            </Transition>
         </Teleport>
     </AuthenticatedLayout>
 </template>
