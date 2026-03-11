@@ -106,7 +106,7 @@ class LectureController extends Controller
 
         $students = Student::where('group_id', $lecture->group_id)
             ->orderBy('first_name')
-            ->get(['id', 'first_name', 'last_name', 'student_external_id', 'photo_path']);
+            ->get(['id', 'first_name', 'second_name', 'last_name', 'student_external_id', 'photo_path']);
 
         $attendances = Attendance::where('lecture_id', $lecture->id)
             ->get()
@@ -116,7 +116,7 @@ class LectureController extends Controller
             $attendance = $attendances->get($student->id);
             return [
                 'id' => $student->id,
-                'full_name' => $student->first_name . ' ' . $student->last_name,
+                'full_name' => trim("{$student->first_name} {$student->second_name} {$student->last_name}"),
                 'external_id' => $student->student_external_id,
                 'photo_url' => $student->photo_path ? asset('storage/' . $student->photo_path) : null,
                 'status' => $attendance ? $attendance->status : 'absent',

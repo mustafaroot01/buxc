@@ -2,30 +2,41 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use App\Traits\LogsArabicActivity;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Student extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes, LogsArabicActivity;
+    use HasFactory, HasUuids, LogsArabicActivity, SoftDeletes;
 
-    public function getArabicModelLabel(): string { return 'طالب'; }
-    public function getArabicName(): string { return "{$this->first_name} {$this->last_name}"; }
-    public function getArabicLogName(): string { return 'الطلاب'; }
+    public function getArabicModelLabel(): string
+    {
+        return 'طالب';
+    }
+
+    public function getArabicName(): string
+    {
+        return trim("{$this->first_name} {$this->second_name} {$this->last_name}");
+    }
+
+    public function getArabicLogName(): string
+    {
+        return 'الطلاب';
+    }
 
     protected $fillable = [
         'first_name',
+        'second_name',
         'last_name',
         'student_external_id',
         'gender',
         'photo_path',
         'group_id',
         'qr_payload',
-        'consecutive_absences'
+        'consecutive_absences',
     ];
 
     public function group()
@@ -45,7 +56,6 @@ class Student extends Model
 
     public function getFullNameAttribute()
     {
-        return "{$this->first_name} {$this->last_name}";
+        return trim("{$this->first_name} {$this->second_name} {$this->last_name}");
     }
 }
-

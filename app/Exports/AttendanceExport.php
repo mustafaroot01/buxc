@@ -105,7 +105,7 @@ class AttendanceExport implements FromQuery, WithHeadings, WithMapping, ShouldAu
         };
 
         return [
-            $attendance->student ? ($attendance->student->first_name . ' ' . $attendance->student->last_name) : 'طالب غير موجود',
+            $attendance->student ? trim($attendance->student->first_name . ' ' . $attendance->student->second_name . ' ' . $attendance->student->last_name) : 'طالب غير موجود',
             $attendance->student->student_external_id ?? '---',
             $attendance->student->group->stage->name ?? '---',
             ($attendance->student->group->study_type ?? '') === 'morning' ? 'صباحي' : 'مسائي',

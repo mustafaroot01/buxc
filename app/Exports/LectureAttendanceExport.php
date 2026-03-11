@@ -42,7 +42,7 @@ class LectureAttendanceExport implements FromArray, WithColumnWidths, WithEvents
 
         $students = Student::where('group_id', $lecture->group_id)
             ->orderBy('first_name')
-            ->get(['id', 'first_name', 'last_name', 'student_external_id']);
+            ->get(['id', 'first_name', 'second_name', 'last_name', 'student_external_id']);
 
         $attendances = Attendance::where('lecture_id', $lecture->id)
             ->get()
@@ -61,7 +61,7 @@ class LectureAttendanceExport implements FromArray, WithColumnWidths, WithEvents
 
             return [
                 $index + 1,
-                $student->first_name . ' ' . $student->last_name,
+                trim($student->first_name . ' ' . $student->second_name . ' ' . $student->last_name),
                 $student->student_external_id ?? '—',
                 $statusMap[$status] ?? 'غائب',
                 $methodMap[$method],

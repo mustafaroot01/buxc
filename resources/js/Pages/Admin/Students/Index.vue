@@ -220,7 +220,7 @@ const confirmDeleteStudent = () => {
                                             <div v-else class="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-teal-600 font-bold ml-4 border border-indigo-100 flex-shrink-0">
                                                 {{ student.first_name.charAt(0) }}
                                             </div>
-                                            <div class="text-[15px] font-bold text-gray-900">{{ student.first_name }} {{ student.last_name }}</div>
+                                            <div class="text-[15px] font-bold text-gray-900">{{ student.first_name }} {{ student.second_name }} {{ student.last_name }}</div>
                                         </div>
                                     </td>
                                     <td class="px-6 py-5 whitespace-nowrap text-center">

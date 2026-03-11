@@ -12,6 +12,7 @@ const props = defineProps<{
     student: {
         id: string;
         first_name: string;
+        second_name?: string;
         last_name: string;
         student_external_id: string;
         gender: string;
@@ -70,7 +71,7 @@ const confirmDeleteStudent = () => {
 </script>
 
 <template>
-    <Head :title="`ملف الطالب: ${student.first_name} ${student.last_name}`" />
+    <Head :title="`ملف الطالب: ${student.first_name} ${student.second_name || ''} ${student.last_name}`" />
 
     <AuthenticatedLayout>
         
@@ -280,7 +281,7 @@ const confirmDeleteStudent = () => {
                                     </div>
                                 </div>
                                 
-                                <h3 class="mt-4 text-[22px] font-black text-gray-900">{{ student.first_name }} {{ student.last_name }}</h3>
+                                <h3 class="mt-4 text-[22px] font-black text-gray-900">{{ student.first_name }} {{ student.second_name }} {{ student.last_name }}</h3>
                                 <div class="mt-2 flex justify-center">
                                     <span class="text-teal-600 font-medium font-mono text-sm bg-teal-50 px-4 py-1.5 rounded-full border border-indigo-100">{{ student.student_external_id }}</span>
                                 </div>
@@ -333,7 +334,7 @@ const confirmDeleteStudent = () => {
 
                            <!-- Print-only labels -->
                            <div class="hidden print:block mt-8 text-center border-t border-dashed border-gray-300 pt-6">
-                                <p class="font-black text-2xl uppercase">{{ student.first_name }} {{ student.last_name }}</p>
+                                <p class="font-black text-2xl uppercase">{{ student.first_name }} {{ student.second_name }} {{ student.last_name }}</p>
                                 <p class="text-gray-500 mt-2 font-mono text-lg tracking-widest">{{ student.student_external_id }}</p>
                            </div>
                         </div>

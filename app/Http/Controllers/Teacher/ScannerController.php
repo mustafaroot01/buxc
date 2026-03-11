@@ -130,7 +130,7 @@ class ScannerController extends Controller
             'success' => true,
             'message' => 'تم تسجيل الحضور بنجاح',
             'student' => [
-                'name' => $student->first_name.' '.$student->last_name,
+                'name' => trim("{$student->first_name} {$student->second_name} {$student->last_name}"),
                 'external_id' => $student->student_external_id,
                 'time' => now()->format('h:i:s A'),
             ],

@@ -21,6 +21,7 @@ class StudentController extends Controller
             $search = $request->get('search');
             $query->where(function($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('second_name', 'like', "%{$search}%")
                   ->orWhere('last_name', 'like', "%{$search}%")
                   ->orWhere('student_external_id', 'like', "%{$search}%");
             });
@@ -65,6 +66,7 @@ class StudentController extends Controller
     {
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
+            'second_name' => 'nullable|string|max:255',
             'last_name' => 'required|string|max:255',
             'student_external_id' => 'required|string|unique:students',
             'gender' => 'required|in:male,female',
@@ -103,6 +105,7 @@ class StudentController extends Controller
     {
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
+            'second_name' => 'nullable|string|max:255',
             'last_name' => 'required|string|max:255',
             'student_external_id' => 'required|string|unique:students,student_external_id,' . $student->id,
             'gender' => 'required|in:male,female',

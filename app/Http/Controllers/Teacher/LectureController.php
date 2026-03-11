@@ -150,7 +150,7 @@ class LectureController extends Controller
         // Get all students in this group
         $students = Student::where('group_id', $lecture->group_id)
             ->orderBy('first_name')
-            ->get(['id', 'first_name', 'last_name', 'student_external_id']);
+            ->get(['id', 'first_name', 'second_name', 'last_name', 'student_external_id']);
 
         // Get existing attendance records for this lecture
         $attendances = Attendance::where('lecture_id', $lecture->id)
@@ -162,7 +162,7 @@ class LectureController extends Controller
             $attendance = $attendances->get($student->id);
             return [
                 'id' => $student->id,
-                'name' => $student->first_name . ' ' . $student->last_name,
+                'name' => trim("{$student->first_name} {$student->second_name} {$student->last_name}"),
                 'student_id' => $student->student_external_id,
                 'status' => $attendance ? $attendance->status : 'absent',
                 'check_in_method' => $attendance ? $attendance->check_in_method : null,

@@ -21,6 +21,7 @@ const props = defineProps<{
 const form = useForm({
     _method: 'put',
     first_name: props.student.first_name,
+    second_name: props.student.second_name,
     last_name: props.student.last_name,
     student_external_id: props.student.student_external_id,
     gender: props.student.gender,
@@ -82,10 +83,16 @@ const submit = () => {
                                         <input type="text" v-model="form.first_name" required class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full p-3 transition-colors" placeholder="الاسم الأول">
                                         <div v-if="form.errors.first_name" class="mt-2 text-sm text-red-600">{{ form.errors.first_name }}</div>
                                     </div>
+
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-700 mb-2">الاسم الثاني (الأب) </label>
+                                        <input type="text" v-model="form.second_name" class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full p-3 transition-colors" placeholder="الاسم الثاني">
+                                        <div v-if="form.errors.second_name" class="mt-2 text-sm text-red-600">{{ form.errors.second_name }}</div>
+                                    </div>
                                     
                                     <div>
-                                        <label class="block text-sm font-bold text-gray-700 mb-2">اسم العائلة / اللقب <span class="text-red-500">*</span></label>
-                                        <input type="text" v-model="form.last_name" required class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full p-3 transition-colors" placeholder="الاسم الأخير">
+                                        <label class="block text-sm font-bold text-gray-700 mb-2">اللقب <span class="text-red-500">*</span></label>
+                                        <input type="text" v-model="form.last_name" required class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full p-3 transition-colors" placeholder="اللقب">
                                         <div v-if="form.errors.last_name" class="mt-2 text-sm text-red-600">{{ form.errors.last_name }}</div>
                                     </div>
                                     
