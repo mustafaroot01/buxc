@@ -30,7 +30,26 @@ const availableGroups = computed(() => {
     return stage ? stage.groups.filter((g: any) => form.study_type ? g.study_type === form.study_type : true) : [];
 });
 
-watch([() => form.stage_id, () => form.study_type], () => {
+const availableStudyTypes = computed(() => {
+    if (!form.stage_id) return ['morning', 'evening'];
+    const stage = props.stages.find(s => s.id === form.stage_id);
+    if (!stage) return ['morning', 'evening'];
+    const types = new Set(stage.groups.map((g: any) => g.study_type));
+    return ['morning', 'evening'].filter(t => types.has(t));
+});
+
+watch(() => form.stage_id, () => {
+    form.group_id = '';
+    // Auto-select if only one study type available
+    const types = availableStudyTypes.value;
+    if (types.length === 1) {
+        form.study_type = types[0];
+    } else if (!types.includes(form.study_type)) {
+        form.study_type = types[0] || 'morning';
+    }
+});
+
+watch(() => form.study_type, () => {
     form.group_id = '';
 });
 
@@ -203,8 +222,8 @@ const cancelDelete = () => {
                                 <label class="block text-sm font-bold text-gray-700 mb-1.5">نوع الدراسة <span class="text-red-500">*</span></label>
                                 <select v-model="form.study_type" required
                                     class="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all">
-                                    <option value="morning">صباحي</option>
-                                    <option value="evening">مسائي</option>
+                                    <option v-if="availableStudyTypes.includes('morning')" value="morning">صباحي</option>
+                                    <option v-if="availableStudyTypes.includes('evening')" value="evening">مسائي</option>
                                 </select>
                             </div>
                         </div>
