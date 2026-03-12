@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
-use App\Http\Controllers\Admin\WarningController as AdminWarningController;
 use App\Http\Controllers\Admin\RegistrationFormController;
+use App\Http\Controllers\Admin\WarningController as AdminWarningController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;

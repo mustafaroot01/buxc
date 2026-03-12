@@ -11,6 +11,7 @@ use App\Models\Attendance;
 use App\Models\AcademicStage;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use App\Jobs\ProcessLectureAbsences;
 
 class LectureController extends Controller
 {
@@ -198,8 +199,13 @@ class LectureController extends Controller
 
         $lecture->update(['status' => $validated['status']]);
 
+        // If lecture is closed, process absences immediately
+        if ($validated['status'] === 'closed') {
+            ProcessLectureAbsences::dispatchSync($lecture);
+        }
+
         return response()->json([
-            'message' => 'Lecture status updated successfully.',
+            'message' => 'Lecture status updated successfully and absences processed.',
             'lecture' => $lecture
         ]);
     }

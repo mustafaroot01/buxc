@@ -116,6 +116,74 @@
 
 ---
 
+---
+
+## 🚫 تنبيه هام: مشكلة التحويل (Redirect) لصفحة الأدمن
+إذا كنت تختبر الـ API ووجدته يقوم بتحويلك لصفحة تسجيل الدخول (`/login` أو `/admin/teachers/login`) بدلاً من إرجاع خطأ `401 Unauthorized` أو بيانات، فهذا يعني أن تطبيق الموبايل **لا يرسل الهيدر المطلوب**.
+
+**يجب إضافة هذا الهيدر في كل طلب:**
+```http
+Accept: application/json
+```
+بدون هذا الهيدر، يعتبر Laravel أن الطلب مرسل من "متصفح ويب" ويقوم بتحويله لصفحة تسجيل الدخول العادية.
+
+---
+
+## 🚀 أمثلة برمجية للربط (Flutter/Dart)
+
+### 1. تسجيل الدخول والحصول على الـ Token
+```dart
+Future<String?> loginTeacher(String email, String password) async {
+  final url = Uri.parse('https://bucx.diyala.net/api/login');
+  
+  final response = await http.post(
+    url,
+    headers: {
+      'Accept': 'application/json', // ضروري جداً لمنع الـ Redirect
+      'Content-Type': 'application/json',
+    },
+    body: jsonEncode({
+      'email': email,
+      'password': password,
+      'device_name': 'Mobile_App',
+    }),
+  );
+
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body);
+    // تأكد أن المستخدم "أستاذ"
+    if (data['user']['roles'].contains('teacher')) {
+      return data['token']; // احفظ هذا الـ Token لاستخدامه لاحقاً
+    } else {
+      throw Exception("هذا الحساب ليس حساب أستاذ");
+    }
+  } else {
+    throw Exception("خطأ في تسجيل الدخول: ${response.body}");
+  }
+}
+```
+
+### 2. جلب إحصائيات لوحة التحكم
+```dart
+Future<void> getDashboard(String token) async {
+  final url = Uri.parse('https://bucx.diyala.net/api/teacher/dashboard');
+  
+  final response = await http.get(
+    url,
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token', // إرسال التوكن هنا
+    },
+  );
+  
+  if (response.statusCode == 200) {
+    print(jsonDecode(response.body));
+  }
+}
+```
+
+---
+
 ## 6. الملف الشخصي (Profile)
 
 ### عرض البيانات
