@@ -14,9 +14,10 @@ import {
 } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import Modal from '@/Components/Modal.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import DangerButton from '@/Components/DangerButton.vue';
+import Pagination from '@/Components/Pagination.vue';
+
 
 const props = defineProps<{
     students: {
@@ -234,7 +235,13 @@ const formatDate = (dateString: string) => {
                     </div>
                 </div>
 
+                <!-- Pagination -->
+                <div class="mt-8">
+                    <Pagination :links="students.links" />
+                </div>
+
                 <!-- Footer Hint -->
+
                 <p class="mt-6 text-center text-[11px] text-gray-400 font-medium">
                     ملاحظة: استعادة الطالب تعيده إلى مجموعته السابقة ليظهر مرة أخرى في قوائم الحضور والغياب.
                 </p>

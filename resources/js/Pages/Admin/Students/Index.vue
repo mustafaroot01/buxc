@@ -7,6 +7,8 @@ import DangerButton from '@/Components/DangerButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import QRCodeVue3 from 'qrcode-vue3';
 import { ref, watch, computed } from 'vue';
+import Pagination from '@/Components/Pagination.vue';
+
 
 const props = defineProps<{
     students: any; // Using any for pagination object brevity
@@ -282,6 +284,11 @@ const confirmDeleteStudent = () => {
                             </tbody>
                         </table>
                     </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="mt-6">
+                    <Pagination :links="students.links" />
                 </div>
             </div>
         </div>
