@@ -70,6 +70,13 @@ class TeacherController extends Controller
         return redirect()->route('admin.teachers.index')->with('success', 'تم إضافة الأستاذ بنجاح.');
     }
 
+    public function show(User $teacher)
+    {
+        return Inertia::render('Admin/Teachers/Show', [
+            'teacher' => $teacher->load(['subjects.groups'])
+        ]);
+    }
+
     public function edit(User $teacher)
     {
         return Inertia::render('Admin/Teachers/Edit', [
