@@ -52,10 +52,10 @@ class ScannerController extends Controller
 
         $lecture->update(['status' => 'closed']);
 
-        // Dispatch background job to process absences and warnings
-        ProcessLectureAbsences::dispatch($lecture);
+        // --- Fix: Dispatch Sync to process absences immediately ---
+        ProcessLectureAbsences::dispatchSync($lecture);
 
-        return redirect()->route('teacher.dashboard')->with('success', 'Lecture session closed successfully.');
+        return redirect()->route('teacher.dashboard')->with('success', 'تم إنهاء المحاضرة بنجاح وتم تسجيل غياب الطلاب المتغيبين.');
     }
 
     public function store(Request $request, $id)
@@ -74,8 +74,8 @@ class ScannerController extends Controller
             return response()->json(['success' => false, 'message' => 'هذه المحاضرة مغلقة ولا يمكن تسجيل الحضور فيها.'], 400);
         }
 
-        // 24-Hour Edit Lock Check
-        if (\Carbon\Carbon::parse($lecture->start_time)->diffInHours(now()) >= 24) {
+        // --- Fix: 24-Hour Edit Lock Check (Allow only if it has not been more than 24 hours since start time) ---
+        if ($lecture->start_time->addHours(24)->isPast()) {
             return response()->json([
                 'success' => false,
                 'message' => 'عذراً، لا يمكن تسجيل الحضور بعد مرور 24 ساعة على المحاضرة.',

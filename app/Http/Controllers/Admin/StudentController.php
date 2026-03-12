@@ -20,9 +20,8 @@ class StudentController extends Controller
         if ($request->has('search')) {
             $search = $request->get('search');
             $query->where(function($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('second_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
+                $q->whereRaw("CONCAT(first_name, ' ', COALESCE(second_name, ''), ' ', last_name) LIKE ?", ["%{$search}%"])
+                  ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$search}%"])
                   ->orWhere('student_external_id', 'like', "%{$search}%");
             });
         }
@@ -136,7 +135,7 @@ class StudentController extends Controller
             'warnings'
         ]);
 
-        $query = $student->attendances()->with('lecture.subject')->orderBy('created_at', 'desc');
+        $query = $student->attendances()->with('lecture.subject', 'lecture.group')->orderBy('created_at', 'desc');
         
         if ($request->has('date') && $request->date != '') {
             $query->whereDate('created_at', $request->date);

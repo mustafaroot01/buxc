@@ -147,10 +147,10 @@ class LectureController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        // 24-Hour Edit Lock Check
-        if ($lecture->start_time->diffInHours(now()) >= 24) {
+        // --- Fix: 24-Hour Edit Lock Check (Allow only if it has not been more than 24 hours since start time) ---
+        if ($lecture->start_time->addHours(24)->isPast()) {
             return response()->json([
-                'error' => 'Lectures cannot be edited after 24 hours.'
+                'error' => 'Lectures cannot be edited after 24 hours from start time.'
             ], 403);
         }
 

@@ -16,7 +16,7 @@ const props = defineProps<{
 
 // Get current date/time strings for defaults
 const now = new Date();
-const todayDate = now.toISOString().split('T')[0];
+const todayDate = now.toLocaleDateString('en-CA'); // Gets YYYY-MM-DD in local time
 const todayTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
 const form = useForm({

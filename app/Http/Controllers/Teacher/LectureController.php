@@ -138,7 +138,7 @@ class LectureController extends Controller
     /**
      * Show lecture details with all students attendance status.
      */
-    public function show($id)
+    public function show($id, Request $request)
     {
         $lecture = Lecture::with(['subject', 'group.stage', 'teacher'])->findOrFail($id);
 
@@ -148,8 +148,19 @@ class LectureController extends Controller
         }
 
         // Get all students in this group
-        $students = Student::where('group_id', $lecture->group_id)
-            ->orderBy('first_name')
+        $studentsQuery = Student::where('group_id', $lecture->group_id);
+
+        // --- Improved Student Search in Lecture Details ---
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $studentsQuery->where(function($q) use ($search) {
+                $q->whereRaw("CONCAT(first_name, ' ', COALESCE(second_name, ''), ' ', last_name) LIKE ?", ["%{$search}%"])
+                  ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$search}%"])
+                  ->orWhere('student_external_id', 'like', "%{$search}%");
+            });
+        }
+
+        $students = $studentsQuery->orderBy('first_name')
             ->get(['id', 'first_name', 'second_name', 'last_name', 'student_external_id']);
 
         // Get existing attendance records for this lecture
@@ -171,16 +182,21 @@ class LectureController extends Controller
             ];
         });
 
+        // Summary should represent all students in the group for consistency
+        $totalInGroup = Student::where('group_id', $lecture->group_id)->count();
+        $presentCount = Attendance::where('lecture_id', $lecture->id)->where('status', 'present')->count();
+
         $summary = [
-            'total' => $students->count(),
-            'present' => $attendances->where('status', 'present')->count(),
-            'absent' => $students->count() - $attendances->where('status', 'present')->count(),
+            'total' => $totalInGroup,
+            'present' => $presentCount,
+            'absent' => $totalInGroup - $presentCount,
         ];
 
         return Inertia::render('Teacher/Lectures/Show', [
             'lecture' => $lecture,
             'students' => $studentsWithStatus,
             'summary' => $summary,
+            'filters' => $request->only('search')
         ]);
     }
 
@@ -195,11 +211,11 @@ class LectureController extends Controller
             return response()->json(['success' => false, 'message' => 'غير مصرح لك.'], 403);
         }
 
-        // 24-Hour Edit Lock Check
-        if ($lecture->start_time->diffInHours(now()) >= 24) {
+        // --- Fix: 24-Hour Edit Lock Check (Allow only if it has not been more than 24 hours since start time) ---
+        if ($lecture->start_time->addHours(24)->isPast()) {
             return response()->json([
                 'success' => false, 
-                'message' => 'عذراً، لا يمكن تعديل المشاهدات بعد مرور 24 ساعة على المحاضرة.'
+                'message' => 'عذراً، لا يمكن تعديل الحضور بعد مرور 24 ساعة على موعد بدء المحاضرة.'
             ], 403);
         }
 

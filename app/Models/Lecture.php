@@ -13,6 +13,21 @@ class Lecture extends Model
 {
     use HasFactory, HasUuids, SoftDeletes, LogsArabicActivity;
 
+    protected static function booted()
+    {
+        static::deleting(function ($lecture) {
+            if ($lecture->isForceDeleting()) {
+                $lecture->attendances()->forceDelete();
+            } else {
+                $lecture->attendances()->delete();
+            }
+        });
+
+        static::restoring(function ($lecture) {
+            $lecture->attendances()->withTrashed()->restore();
+        });
+    }
+
     public function getArabicModelLabel(): string { return 'محاضرة'; }
     public function getArabicName(): string { return $this->title; }
     public function getArabicLogName(): string { return 'المحاضرات'; }
@@ -75,4 +90,3 @@ class Lecture extends Model
         return $this->hasMany(Attendance::class, 'lecture_id');
     }
 }
-
