@@ -18,6 +18,10 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
         ]);
 
+        $middleware->api(append: [
+            \App\Http\Middleware\ForceJsonResponse::class,
+        ]);
+
         $middleware->alias([
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
@@ -25,6 +29,28 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->render(function (\Throwable $e, \Illuminate\Http\Request $request) {
+            if ($request->is('api/*')) {
+                $status = 500;
+                if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface) {
+                    $status = $e->getStatusCode();
+                } elseif ($e instanceof \Illuminate\Validation\ValidationException) {
+                    $status = 422;
+                } elseif ($e instanceof \Illuminate\Auth\AuthenticationException) {
+                    $status = 401;
+                }
 
-        //
+                $message = $e->getMessage();
+                if ($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+                    $message = 'السجل المطلوب غير موجود.';
+                    $status = 404;
+                }
+
+                return response()->json([
+                    'success' => false,
+                    'message' => $message,
+                    'errors'  => $e instanceof \Illuminate\Validation\ValidationException ? $e->errors() : null,
+                ], $status);
+            }
+        });
     })->create();

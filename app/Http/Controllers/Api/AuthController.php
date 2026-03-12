@@ -8,8 +8,12 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use App\Models\User;
 
+use App\Traits\ApiResponse;
+
 class AuthController extends Controller
 {
+    use ApiResponse;
+
     public function login(Request $request)
     {
         $request->validate([
@@ -21,29 +25,27 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
-            ]);
+            return $this->error('بيانات الدخول غير صحيحة. يرجى التأكد من البريد الإلكتروني وكلمة المرور.', 401);
         }
 
         $token = $user->createToken($request->device_name)->plainTextToken;
 
-        return response()->json([
+        return $this->success([
             'token' => $token,
             'user' => [
                 'id' => $user->id,
-                'name' => $user->name,
+                'full_name' => $user->full_name,
                 'email' => $user->email,
                 'roles' => $user->getRoleNames()
             ]
-        ]);
+        ], 'تم تسجيل الدخول بنجاح.');
     }
 
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json(['message' => 'Logged out successfully.']);
+        return $this->success(null, 'تم تسجيل الخروج بنجاح.');
     }
 }
 

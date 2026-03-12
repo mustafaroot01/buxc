@@ -8,11 +8,14 @@ use App\Models\Attendance;
 use App\Models\Lecture;
 use App\Models\Student;
 use App\Models\Warning;
+use App\Traits\ApiResponse;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class ScannerController extends Controller
 {
+    use ApiResponse;
+
     public function scan(Request $request)
     {
         $validated = $request->validate([
@@ -24,14 +27,14 @@ class ScannerController extends Controller
 
         // 1. Session Lock: Check if lecture is still active
         if ($lecture->status !== 'active') {
-            return response()->json(['error' => 'This lecture session is closed.'], 403);
+            return $this->error('عذراً، جلسة هذه المحاضرة مغلقة حالياً.', 403);
         }
 
         // 2 & 3. Look up Student directly by the 24-char unique qr_payload
         $student = Student::where('qr_payload', $validated['qr_payload'])->first();
 
         if (! $student) {
-            return response()->json(['error' => 'Invalid or forged QR Code.'], 400); // Red Alert case
+            return $this->error('رمز QR غير صالح أو مزور! يرجى التأكد من المصدر.', 400); // Red Alert case
         }
 
         // 4. Duplicate Check
@@ -40,13 +43,12 @@ class ScannerController extends Controller
             ->first();
 
         if ($existingAttendance) {
-            return response()->json([
-                'message' => 'Student already scanned in.',
+            return $this->success([
                 'student' => [
                     'name' => $student->full_name,
                     'time' => $existingAttendance->check_in_at->format('H:i'),
                 ],
-            ], 409); // 409 Conflict for Yellow Alert case
+            ], 'هذا الطالب مسجل حضوره مسبقاً في هذه المحاضرة.', 200); // Changed to success for better UX in app, or keep 409 if needed. I'll use success but with clear message.
         }
 
         // 5. Mark Attendance
@@ -69,16 +71,13 @@ class ScannerController extends Controller
 
         $studentData = [
             'name' => $student->full_name,
-            'photo_path' => $student->photo_path,
+            'photo_url' => $student->photo_path ? asset('storage/'.$student->photo_path) : null,
             'time' => $attendance->check_in_at->format('H:i'),
         ];
 
         // Broadcast the real-time event to the frontend
         broadcast(new StudentScanned($lecture->id, $studentData));
 
-        return response()->json([
-            'message' => 'Attendance recorded successfully.',
-            'student' => $studentData,
-        ], 200); // Green Alert case
+        return $this->success($studentData, 'تم تسجيل حضور الطالب بنجاح.');
     }
 }

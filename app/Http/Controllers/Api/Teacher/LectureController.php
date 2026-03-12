@@ -13,8 +13,11 @@ use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Jobs\ProcessLectureAbsences;
 
+use App\Traits\ApiResponse;
+
 class LectureController extends Controller
 {
+    use ApiResponse;
     /**
      * Display a paginated listing of the teacher's lectures.
      */
@@ -57,7 +60,7 @@ class LectureController extends Controller
             return $lecture;
         });
 
-        return response()->json($lectures);
+        return $this->success($lectures, 'تم جلب قائمة المحاضرات بنجاح.');
     }
 
     /**
@@ -88,10 +91,11 @@ class LectureController extends Controller
             'status' => 'active',
         ]);
 
-        return response()->json([
-            'message' => 'Lecture created successfully.',
-            'lecture' => $lecture->load(['subject', 'group.stage'])
-        ], 201);
+        return $this->success(
+            $lecture->load(['subject', 'group.stage']),
+            'تم إنشاء المحاضرة بنجاح.',
+            201
+        );
     }
 
     /**
@@ -126,7 +130,7 @@ class LectureController extends Controller
             ];
         });
 
-        return response()->json([
+        return $this->success([
             'lecture' => $lecture,
             'students' => $studentsWithStatus,
             'summary' => [
@@ -134,7 +138,7 @@ class LectureController extends Controller
                 'present_count' => $attendances->where('status', 'present')->count(),
                 'absent_count' => $students->count() - $attendances->where('status', 'present')->count(),
             ]
-        ]);
+        ], 'تم جلب تفاصيل المحاضرة بنجاح.');
     }
 
     /**
@@ -150,9 +154,7 @@ class LectureController extends Controller
 
         // --- Fix: 24-Hour Edit Lock Check (Allow only if it has not been more than 24 hours since start time) ---
         if ($lecture->start_time->addHours(24)->isPast()) {
-            return response()->json([
-                'error' => 'Lectures cannot be edited after 24 hours from start time.'
-            ], 403);
+            return $this->error('لا يمكن تعديل المحاضرة بعد مرور 24 ساعة على بدايتها.', 403);
         }
 
         $request->validate(['student_id' => 'required|exists:students,id']);
@@ -164,7 +166,7 @@ class LectureController extends Controller
 
         if ($existing) {
             $existing->delete();
-            return response()->json(['message' => 'Attendance removed', 'status' => 'absent']);
+            return $this->success(['status' => 'absent'], 'تم إلغاء تسجيل الحضور بنجاح.');
         }
 
         $attendance = Attendance::create([
@@ -175,11 +177,10 @@ class LectureController extends Controller
             'check_in_at' => now(),
         ]);
 
-        return response()->json([
-            'message' => 'Attendance recorded manually',
+        return $this->success([
             'status' => 'present',
             'check_in_at' => $attendance->check_in_at
-        ]);
+        ], 'تم تسجيل الحضور يدوياً بنجاح.');
     }
 
     /**
@@ -204,9 +205,6 @@ class LectureController extends Controller
             ProcessLectureAbsences::dispatchSync($lecture);
         }
 
-        return response()->json([
-            'message' => 'Lecture status updated successfully and absences processed.',
-            'lecture' => $lecture
-        ]);
+        return $this->success($lecture, 'تم تحديث حالة المحاضرة ومعالجة الغيابات بنجاح.');
     }
 }
