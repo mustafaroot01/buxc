@@ -97,7 +97,6 @@ class ProcessLectureAbsences implements ShouldQueue
                             'issued_at' => Carbon::now(),
                         ]);
                     }
-                }
             }
         }
     }
