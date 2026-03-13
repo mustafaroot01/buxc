@@ -15,6 +15,7 @@ const props = defineProps<{
         group: { name: string };
     };
     initial_students: Array<{name: string, time: string, external_id: string}>;
+    total_students: number;
 }>();
 
 const scannedStudents = ref<Array<{name: string, time: string, external_id?: string, status?: 'present' | 'pending' | 'failed', qr_payload?: string}>>([...props.initial_students.map(s => ({...s, status: 'present' as const}))]);
@@ -479,7 +480,7 @@ onUnmounted(() => {
                             </div>
                             <div class="w-px h-10 bg-gray-200"></div>
                             <div class="text-center">
-                                <p class="text-3xl font-black text-gray-400">—</p>
+                                <p class="text-3xl font-black text-gray-400">{{ total_students - totalScanned }}</p>
                                 <p class="text-xs text-gray-500 font-bold mt-1">🔴 سيُسجَّل غائباً</p>
                             </div>
                         </div>

@@ -16,10 +16,24 @@ class Lecture extends Model
     protected static function booted()
     {
         static::deleting(function ($lecture) {
+            // 1. Revert consecutive absences for students who were marked absent in this lecture
+            $absentStudentIds = $lecture->attendances()
+                ->where('status', 'absent')
+                ->pluck('student_id');
+
+            if ($absentStudentIds->isNotEmpty()) {
+                \App\Models\Student::whereIn('id', $absentStudentIds)
+                    ->where('consecutive_absences', '>', 0)
+                    ->decrement('consecutive_absences');
+            }
+
+            // 2. Cascade delete attendances
             if ($lecture->isForceDeleting()) {
                 $lecture->attendances()->forceDelete();
+                \App\Models\Warning::where('lecture_id', $lecture->id)->forceDelete();
             } else {
                 $lecture->attendances()->delete();
+                \App\Models\Warning::where('lecture_id', $lecture->id)->delete();
             }
         });
 

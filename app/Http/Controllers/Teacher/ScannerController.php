@@ -36,9 +36,12 @@ class ScannerController extends Controller
                 ];
             });
 
+        $totalStudents = Student::where('group_id', $lecture->group_id)->count();
+        
         return Inertia::render('Teacher/Scanner/Show', [
             'lecture' => $lecture,
             'initial_students' => $attendances,
+            'total_students' => $totalStudents,
         ]);
     }
 
