@@ -32,72 +32,96 @@ class ProcessLectureAbsences implements ShouldQueue
     {
         $lecture = $this->lecture;
 
-        // Find all students that belong to this lecture's group
-        $students = Student::where('group_id', $lecture->group_id)
-            ->get();
-
         // Fetch configured threshold (default to 5)
         $thresholdSetting = Setting::where('key', 'attendance_warning_threshold')->first();
         $threshold = $thresholdSetting ? (int) $thresholdSetting->value : 5;
 
+        // 1. Fetch ALL students in the group
+        $students = Student::where('group_id', $lecture->group_id)->get();
+        if ($students->isEmpty()) {
+            return;
+        }
+
+        // 2. Fetch ALL existing attendance records for this lecture (including trashed)
+        $existingAttendances = Attendance::withTrashed()
+            ->where('lecture_id', $lecture->id)
+            ->get()
+            ->keyBy('student_id');
+
+        $attendanceDataToUpsert = [];
+        $studentsToIncrementStreak = [];
+        $warningsToCreate = [];
+        $now = Carbon::now();
+
         foreach ($students as $student) {
-            // Unified Fix: Check for existing record (including thrashed)
-            $existing = Attendance::withTrashed()
-                ->where('lecture_id', $lecture->id)
-                ->where('student_id', $student->id)
-                ->first();
+            $existing = $existingAttendances->get($student->id);
 
-            if (! $existing) {
-                // Mark them absent for the first time
-                Attendance::create([
-                    'lecture_id' => $lecture->id,
-                    'student_id' => $student->id,
-                    'status' => 'absent',
-                    'check_in_at' => null,
+            // Logic: If NO record exists, or record exists but is NOT 'absent' or is 'trashed'
+            if (! $existing || $existing->status !== 'absent' || $existing->trashed()) {
+                
+                // Prepare attendance data for upsert
+                $attendanceDataToUpsert[] = [
+                    'id'              => $existing ? $existing->id : (string) \Illuminate\Support\Str::uuid(),
+                    'lecture_id'      => $lecture->id,
+                    'student_id'      => $student->id,
+                    'status'          => 'absent',
+                    'check_in_at'     => null,
                     'check_in_method' => null,
-                ]);
+                    'deleted_at'      => null,
+                    'created_at'      => $existing ? $existing->created_at : $now,
+                    'updated_at'      => $now,
+                ];
 
-                $student->increment('consecutive_absences');
-            } elseif ($existing->status !== 'absent' || $existing->trashed()) {
-                // If they have a record but it's not 'absent' (or it's trashed), update/restore it to 'absent'
-                if ($existing->trashed()) {
-                    $existing->restore();
-                }
+                // If it's a completely NEW record or being restored/changed to 'absent', increment streak
+                if (! $existing || ($existing->status !== 'absent' || $existing->trashed())) {
+                    $studentsToIncrementStreak[] = $student->id;
+                    
+                    // Predict the new streak for warning logic
+                    $newStreak = $student->consecutive_absences + 1;
+                    
+                    if ($newStreak > 0 && $newStreak % $threshold === 0) {
+                        $newLevel = (int) ($newStreak / $threshold);
+                        
+                        // Check for existing active warning (still a query, but only for those hitting milestone)
+                        $alreadyHasThisLevel = Warning::where('student_id', $student->id)
+                            ->where('level', $newLevel)
+                            ->whereNull('resolved_at')
+                            ->exists();
 
-                $existing->update([
-                    'status' => 'absent',
-                    'check_in_at' => null,
-                    'check_in_method' => null,
-                ]);
-
-                // We only increment if we are moving from NOT absent to absent
-                // (In this case, if it was 'present' and then we marked it 'absent' via job)
-                // However, usually the job runs for those who don't have ANY record.
-                // If they have a record and it was 'present', we don't increment streak because they were present.
-                // Actually, the logic should be: if we are forcing it to absent because they didn't attend.
-            }
-
-                // If they reached a milestone (e.g., 5, 10, 15...), assign a new warning level
-                if ($student->consecutive_absences > 0 && $student->consecutive_absences % $threshold === 0) {
-                    $newLevel = (int) ($student->consecutive_absences / $threshold);
-
-                    // Check if this specific level already exists for this student and hasn't been resolved
-                    // This prevents duplicate warnings for the same milestone if the job is re-run
-                    $alreadyHasThisLevel = Warning::where('student_id', $student->id)
-                        ->where('level', $newLevel)
-                        ->whereNull('resolved_at')
-                        ->exists();
-
-                    if (! $alreadyHasThisLevel) {
-                        Warning::create([
-                            'student_id' => $student->id,
-                            'lecture_id' => $lecture->id,
-                            'level' => $newLevel,
-                            'reason' => "تجاوز الحد المسموح من الغيابات المتتالية ({$student->consecutive_absences} غيابات).",
-                            'issued_at' => Carbon::now(),
-                        ]);
+                        if (! $alreadyHasThisLevel) {
+                            $warningsToCreate[] = [
+                                'id'         => (string) \Illuminate\Support\Str::uuid(),
+                                'student_id' => $student->id,
+                                'lecture_id' => $lecture->id,
+                                'level'      => $newLevel,
+                                'reason'     => "تجاوز الحد المسموح من الغيابات المتتالية ({$newStreak} غيابات).",
+                                'issued_at'  => $now,
+                                'created_at' => $now,
+                                'updated_at' => $now,
+                            ];
+                        }
                     }
+                }
             }
         }
+
+        // 3. Execution Phase: Using Database Transaction for safety
+        \Illuminate\Support\Facades\DB::transaction(function () use ($attendanceDataToUpsert, $studentsToIncrementStreak, $warningsToCreate) {
+            
+            // Bulk Upsert Attendances
+            if (!empty($attendanceDataToUpsert)) {
+                Attendance::upsert($attendanceDataToUpsert, ['id'], ['status', 'check_in_at', 'check_in_method', 'deleted_at', 'updated_at']);
+            }
+
+            // Bulk Increment Streaks
+            if (!empty($studentsToIncrementStreak)) {
+                Student::whereIn('id', $studentsToIncrementStreak)->increment('consecutive_absences');
+            }
+
+            // Bulk Insert Warnings
+            if (!empty($warningsToCreate)) {
+                Warning::insert($warningsToCreate);
+            }
+        });
     }
 }
