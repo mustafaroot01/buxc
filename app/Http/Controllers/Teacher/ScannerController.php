@@ -97,25 +97,35 @@ class ScannerController extends Controller
             return response()->json(['success' => false, 'message' => 'الطالب لا ينتمي لمجموعة هذه المحاضرة.'], 400);
         }
 
-        // Sub-50ms Optimization: Rely entirely on the physical UNIQUE constraint in the DB.
-        // No heavy SELECT query to check for duplicates before inserting.
-        try {
-            Attendance::create([
+        // Unified Fix: Check for existing record (even thrashed) and handle restoration
+        $existing = Attendance::withTrashed()
+            ->where('lecture_id', $lecture->id)
+            ->where('student_id', $student->id)
+            ->first();
+
+        if ($existing) {
+            if ($existing->status === 'present' && ! $existing->trashed()) {
+                return response()->json(['success' => false, 'message' => 'تم تسجيل حضور هذا الطالب مسبقاً.'], 400);
+            }
+
+            if ($existing->trashed()) {
+                $existing->restore();
+            }
+
+            $existing->update([
+                'status' => 'present',
+                'check_in_method' => 'qr',
+                'check_in_at' => now(),
+            ]);
+            $attendance = $existing;
+        } else {
+            $attendance = Attendance::create([
                 'lecture_id' => $lecture->id,
                 'student_id' => $student->id,
                 'status' => 'present',
                 'check_in_method' => 'qr',
                 'check_in_at' => now(),
             ]);
-        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
-            // Caught by the anti-duplication shield (UNIQUE(lecture_id, student_id))
-            return response()->json(['success' => false, 'message' => 'تم تسجيل حضور هذا الطالب مسبقاً.'], 400);
-        } catch (\Illuminate\Database\QueryException $e) {
-            // Fallback for some DB drivers that might not throw the specific UniqueConstraint exception
-            if ($e->getCode() == 23000 || (isset($e->errorInfo[1]) && $e->errorInfo[1] == 19)) {
-                return response()->json(['success' => false, 'message' => 'تم تسجيل حضور هذا الطالب مسبقاً.'], 400);
-            }
-            throw $e;
         }
 
         // Warning Logic: Reset streak and resolve active warnings

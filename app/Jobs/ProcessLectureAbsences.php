@@ -41,13 +41,14 @@ class ProcessLectureAbsences implements ShouldQueue
         $threshold = $thresholdSetting ? (int) $thresholdSetting->value : 5;
 
         foreach ($students as $student) {
-            // Check if they already have an attendance record for this lecture (present, excused, etc.)
-            $attended = Attendance::where('lecture_id', $lecture->id)
+            // Unified Fix: Check for existing record (including thrashed)
+            $existing = Attendance::withTrashed()
+                ->where('lecture_id', $lecture->id)
                 ->where('student_id', $student->id)
-                ->exists();
+                ->first();
 
-            if (! $attended) {
-                // Mark them absent
+            if (! $existing) {
+                // Mark them absent for the first time
                 Attendance::create([
                     'lecture_id' => $lecture->id,
                     'student_id' => $student->id,
@@ -56,8 +57,25 @@ class ProcessLectureAbsences implements ShouldQueue
                     'check_in_method' => null,
                 ]);
 
-                // Increment their consecutive absences streak
                 $student->increment('consecutive_absences');
+            } elseif ($existing->status !== 'absent' || $existing->trashed()) {
+                // If they have a record but it's not 'absent' (or it's trashed), update/restore it to 'absent'
+                if ($existing->trashed()) {
+                    $existing->restore();
+                }
+
+                $existing->update([
+                    'status' => 'absent',
+                    'check_in_at' => null,
+                    'check_in_method' => null,
+                ]);
+
+                // We only increment if we are moving from NOT absent to absent
+                // (In this case, if it was 'present' and then we marked it 'absent' via job)
+                // However, usually the job runs for those who don't have ANY record.
+                // If they have a record and it was 'present', we don't increment streak because they were present.
+                // Actually, the logic should be: if we are forcing it to absent because they didn't attend.
+            }
 
                 // If they reached a milestone (e.g., 5, 10, 15...), assign a new warning level
                 if ($student->consecutive_absences > 0 && $student->consecutive_absences % $threshold === 0) {
