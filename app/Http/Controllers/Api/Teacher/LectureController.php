@@ -239,4 +239,25 @@ class LectureController extends Controller
 
         return $this->success(null, 'تم حذف المحاضرة بنجاح.');
     }
+
+    /**
+     * Export attendance report for a specific lecture (API).
+     */
+    public function export($id)
+    {
+        $lecture = Lecture::findOrFail($id);
+
+        if ($lecture->teacher_id !== Auth::id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $date = \Carbon\Carbon::parse($lecture->start_time)->format('Y_m_d');
+        $safeName = preg_replace('/[^\p{Arabic}\w\s]/u', '', $lecture->title);
+        $fileName = "كشف_حضور_{$safeName}_{$date}.xlsx";
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\LectureAttendanceExport($id), 
+            $fileName
+        );
+    }
 }

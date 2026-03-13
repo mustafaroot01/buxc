@@ -27,6 +27,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/lectures', [\App\Http\Controllers\Api\Teacher\LectureController::class, 'index']);
             Route::post('/lectures', [\App\Http\Controllers\Api\Teacher\LectureController::class, 'store']);
             Route::get('/lectures/{lecture}', [\App\Http\Controllers\Api\Teacher\LectureController::class, 'show']);
+            Route::get('/lectures/{lecture}/export', [\App\Http\Controllers\Api\Teacher\LectureController::class, 'export']);
             Route::patch('/lectures/{lecture}', [\App\Http\Controllers\Api\Teacher\LectureController::class, 'update']);
             Route::delete('/lectures/{lecture}', [\App\Http\Controllers\Api\Teacher\LectureController::class, 'destroy']);
             Route::post('/lectures/{lecture}/toggle-attendance', [\App\Http\Controllers\Api\Teacher\LectureController::class, 'toggleAttendance']);
