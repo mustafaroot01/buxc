@@ -44,6 +44,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/archive/{id}/restore', [\App\Http\Controllers\Admin\ArchiveController::class, 'restore'])->name('archive.restore');
         Route::delete('/archive/{id}', [\App\Http\Controllers\Admin\ArchiveController::class, 'destroy'])->name('archive.destroy');
 
+        // Lectures Archive
+        Route::get('/archives/lectures', [\App\Http\Controllers\Admin\LectureArchiveController::class, 'index'])->name('archives.lectures.index');
+        Route::post('/archives/lectures/{id}/restore', [\App\Http\Controllers\Admin\LectureArchiveController::class, 'restore'])->name('archives.lectures.restore');
+        Route::delete('/archives/lectures/{id}', [\App\Http\Controllers\Admin\LectureArchiveController::class, 'destroy'])->name('archives.lectures.destroy');
+
         // Audit Trail
         Route::get('/audit', [\App\Http\Controllers\Admin\AuditController::class, 'index'])->name('audit.index');
 

@@ -50,6 +50,7 @@ const navigation = [
     { name: 'التقارير', href: route('admin.reports.index'), current: route().current('admin.reports.*'), icon: FileBarChartIcon, roles: ['admin', 'super_admin'] },
     { name: 'تنبيهات الغياب', href: route('admin.warnings.index'), current: route().current('admin.warnings.*'), icon: AlertTriangleIcon, roles: ['admin', 'super_admin'] },
     { name: 'الأرشيف', href: route('admin.archive.index'), current: route().current('admin.archive.*'), icon: ArchiveIcon, roles: ['admin', 'super_admin'] },
+    { name: 'أرشيف المحاضرات', href: route('admin.archives.lectures.index'), current: route().current('admin.archives.lectures.*'), icon: ArchiveIcon, roles: ['admin', 'super_admin'] },
     
     // Super Admin only
     { name: 'سجل النشاطات', href: route('admin.audit.index'), current: route().current('admin.audit.*'), icon: ActivityIcon, roles: ['super_admin'] },
