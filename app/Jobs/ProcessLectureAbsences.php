@@ -56,33 +56,38 @@ class ProcessLectureAbsences implements ShouldQueue
         foreach ($students as $student) {
             $existing = $existingAttendances->get($student->id);
 
-            // Logic: If NO record exists, or record exists but is NOT 'absent' or is 'trashed'
-            if (! $existing || $existing->status !== 'absent' || $existing->trashed()) {
-                
-                // Prepare attendance data for upsert
-                $attendanceDataToUpsert[] = [
-                    'id'              => $existing ? $existing->id : (string) \Illuminate\Support\Str::uuid(),
-                    'lecture_id'      => $lecture->id,
-                    'student_id'      => $student->id,
-                    'status'          => 'absent',
-                    'check_in_at'     => null,
-                    'check_in_method' => null,
-                    'deleted_at'      => null,
-                    'created_at'      => $existing ? $existing->created_at : $now,
-                    'updated_at'      => $now,
-                ];
+            // Logic: A student is "Actually Present" if they have a non-trashed 'present' record.
+            $isActuallyPresent = $existing && $existing->status === 'present' && ! $existing->trashed();
 
-                // If it's a completely NEW record or being restored/changed to 'absent', increment streak
-                if (! $existing || ($existing->status !== 'absent' || $existing->trashed())) {
+            // If the student is NOT present, we need to ensure they have an 'absent' record
+            if (! $isActuallyPresent) {
+
+                // We only create/update to 'absent' if it's not already 'absent' OR if it's trashed
+                $needsAbsentRecord = ! $existing || $existing->status !== 'absent' || $existing->trashed();
+
+                if ($needsAbsentRecord) {
+                    $attendanceDataToUpsert[] = [
+                        'id' => $existing ? $existing->id : (string) \Illuminate\Support\Str::uuid(),
+                        'lecture_id' => $lecture->id,
+                        'student_id' => $student->id,
+                        'status' => 'absent',
+                        'check_in_at' => null,
+                        'check_in_method' => null,
+                        'deleted_at' => null,
+                        'created_at' => $existing ? $existing->created_at : $now,
+                        'updated_at' => $now,
+                    ];
+
+                    // Increment streak only if this is a NEW absence (not already marked absent)
                     $studentsToIncrementStreak[] = $student->id;
-                    
+
                     // Predict the new streak for warning logic
                     $newStreak = $student->consecutive_absences + 1;
-                    
+
                     if ($newStreak > 0 && $newStreak % $threshold === 0) {
                         $newLevel = (int) ($newStreak / $threshold);
-                        
-                        // Check for existing active warning (still a query, but only for those hitting milestone)
+
+                        // Check for existing active warning
                         $alreadyHasThisLevel = Warning::where('student_id', $student->id)
                             ->where('level', $newLevel)
                             ->whereNull('resolved_at')
@@ -90,12 +95,12 @@ class ProcessLectureAbsences implements ShouldQueue
 
                         if (! $alreadyHasThisLevel) {
                             $warningsToCreate[] = [
-                                'id'         => (string) \Illuminate\Support\Str::uuid(),
+                                'id' => (string) \Illuminate\Support\Str::uuid(),
                                 'student_id' => $student->id,
                                 'lecture_id' => $lecture->id,
-                                'level'      => $newLevel,
-                                'reason'     => "تجاوز الحد المسموح من الغيابات المتتالية ({$newStreak} غيابات).",
-                                'issued_at'  => $now,
+                                'level' => $newLevel,
+                                'reason' => "تجاوز الحد المسموح من الغيابات المتتالية ({$newStreak} غيابات).",
+                                'issued_at' => $now,
                                 'created_at' => $now,
                                 'updated_at' => $now,
                             ];
@@ -107,19 +112,19 @@ class ProcessLectureAbsences implements ShouldQueue
 
         // 3. Execution Phase: Using Database Transaction for safety
         \Illuminate\Support\Facades\DB::transaction(function () use ($attendanceDataToUpsert, $studentsToIncrementStreak, $warningsToCreate) {
-            
+
             // Bulk Upsert Attendances
-            if (!empty($attendanceDataToUpsert)) {
+            if (! empty($attendanceDataToUpsert)) {
                 Attendance::upsert($attendanceDataToUpsert, ['id'], ['status', 'check_in_at', 'check_in_method', 'deleted_at', 'updated_at']);
             }
 
             // Bulk Increment Streaks
-            if (!empty($studentsToIncrementStreak)) {
+            if (! empty($studentsToIncrementStreak)) {
                 Student::whereIn('id', $studentsToIncrementStreak)->increment('consecutive_absences');
             }
 
             // Bulk Insert Warnings
-            if (!empty($warningsToCreate)) {
+            if (! empty($warningsToCreate)) {
                 Warning::insert($warningsToCreate);
             }
         });
