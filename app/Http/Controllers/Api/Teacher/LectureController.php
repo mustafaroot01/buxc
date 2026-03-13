@@ -223,4 +223,20 @@ class LectureController extends Controller
 
         return $this->success($lecture, 'تم تحديث حالة المحاضرة ومعالجة الغيابات بنجاح.');
     }
+
+    /**
+     * Remove the specified lecture from storage (Soft Delete).
+     */
+    public function destroy($id)
+    {
+        $lecture = Lecture::findOrFail($id);
+
+        if ($lecture->teacher_id !== Auth::id()) {
+            return $this->error('غير مصرح لك بحذف هذه المحاضرة.', 403);
+        }
+
+        $lecture->delete();
+
+        return $this->success(null, 'تم حذف المحاضرة بنجاح.');
+    }
 }
