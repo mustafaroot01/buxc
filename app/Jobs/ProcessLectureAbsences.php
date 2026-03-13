@@ -59,22 +59,23 @@ class ProcessLectureAbsences implements ShouldQueue
                 // Increment their consecutive absences streak
                 $student->increment('consecutive_absences');
 
-                // If they reached or exceeded the threshold, assign a warning (if they don't have an active one)
-                if ($student->consecutive_absences >= $threshold) {
-                    $hasActiveWarning = Warning::where('student_id', $student->id)
+                // If they reached a milestone (e.g., 5, 10, 15...), assign a new warning level
+                if ($student->consecutive_absences > 0 && $student->consecutive_absences % $threshold === 0) {
+                    $newLevel = (int) ($student->consecutive_absences / $threshold);
+
+                    // Check if this specific level already exists for this student and hasn't been resolved
+                    // This prevents duplicate warnings for the same milestone if the job is re-run
+                    $alreadyHasThisLevel = Warning::where('student_id', $student->id)
+                        ->where('level', $newLevel)
                         ->whereNull('resolved_at')
                         ->exists();
 
-                    if (! $hasActiveWarning) {
-                        // Determine the level based on previous un-resolved or historically resolved warnings
-                        $previousWarningsCount = Warning::where('student_id', $student->id)->count();
-                        $newLevel = $previousWarningsCount + 1;
-
+                    if (! $alreadyHasThisLevel) {
                         Warning::create([
                             'student_id' => $student->id,
                             'lecture_id' => $lecture->id,
                             'level' => $newLevel,
-                            'reason' => "تجاوز الحد المسموح من الغيابات المتتالية ({$threshold} غيابات).",
+                            'reason' => "تجاوز الحد المسموح من الغيابات المتتالية ({$student->consecutive_absences} غيابات).",
                             'issued_at' => Carbon::now(),
                         ]);
                     }

@@ -3,40 +3,38 @@
 namespace App\Http\Controllers\Api\Teacher;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Lecture;
-use App\Models\Subject;
-use App\Models\Student;
-use App\Models\Attendance;
-use App\Models\AcademicStage;
-use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
 use App\Jobs\ProcessLectureAbsences;
-
+use App\Models\Attendance;
+use App\Models\Lecture;
+use App\Models\Student;
 use App\Traits\ApiResponse;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class LectureController extends Controller
 {
     use ApiResponse;
+
     /**
      * Display a paginated listing of the teacher's lectures.
      */
     public function index(Request $request)
     {
         $teacherId = Auth::id();
-        
+
         $query = Lecture::with(['subject', 'group.stage'])
             ->withCount([
                 'attendances as present_count' => function ($q) {
                     $q->where('status', 'present');
-                }
+                },
             ])
             ->where('teacher_id', $teacherId)
             ->latest('start_time');
 
         // Apply filters
         if ($request->filled('search')) {
-            $query->where('title', 'like', '%' . $request->search . '%');
+            $query->where('title', 'like', '%'.$request->search.'%');
         }
         if ($request->filled('subject_id')) {
             $query->where('subject_id', $request->subject_id);
@@ -57,6 +55,7 @@ class LectureController extends Controller
             $totalStudents = Student::where('group_id', $lecture->group_id)->count();
             $lecture->total_students_count = $totalStudents;
             $lecture->absent_students_count = $totalStudents - ($lecture->present_count ?? 0);
+
             return $lecture;
         });
 
@@ -119,11 +118,12 @@ class LectureController extends Controller
 
         $studentsWithStatus = $students->map(function ($student) use ($attendances) {
             $attendance = $attendances->get($student->id);
+
             return [
                 'id' => $student->id,
                 'full_name' => trim("{$student->first_name} {$student->second_name} {$student->last_name}"),
                 'external_id' => $student->student_external_id,
-                'photo_url' => $student->photo_path ? asset('storage/' . $student->photo_path) : null,
+                'photo_url' => $student->photo_path ? asset('storage/'.$student->photo_path) : null,
                 'status' => $attendance ? $attendance->status : 'absent',
                 'check_in_method' => $attendance ? $attendance->check_in_method : null,
                 'check_in_at' => $attendance ? $attendance->check_in_at : null,
@@ -137,7 +137,7 @@ class LectureController extends Controller
                 'total_students' => $students->count(),
                 'present_count' => $attendances->where('status', 'present')->count(),
                 'absent_count' => $students->count() - $attendances->where('status', 'present')->count(),
-            ]
+            ],
         ], 'تم جلب تفاصيل المحاضرة بنجاح.');
     }
 
@@ -160,27 +160,36 @@ class LectureController extends Controller
         $request->validate(['student_id' => 'required|exists:students,id']);
         $studentId = $request->student_id;
 
-        $existing = Attendance::where('lecture_id', $lectureId)
+        $existing = Attendance::withTrashed()
+            ->where('lecture_id', $lectureId)
             ->where('student_id', $studentId)
             ->first();
 
-        if ($existing) {
-            $existing->delete();
+        // If it exists and is 'present', we toggle to 'absent' (Soft delete or status change)
+        if ($existing && $existing->status === 'present' && ! $existing->trashed()) {
+            $existing->delete(); // This performs soft delete
+
             return $this->success(['status' => 'absent'], 'تم إلغاء تسجيل الحضور بنجاح.');
         }
 
-        $attendance = Attendance::create([
-            'lecture_id' => $lectureId,
-            'student_id' => $studentId,
-            'status' => 'present',
-            'check_in_method' => 'manual',
-            'check_in_at' => now(),
-        ]);
+        // Otherwise, we ensure it's 'present' and restored
+        $attendance = Attendance::withTrashed()->updateOrCreate(
+            [
+                'lecture_id' => $lectureId,
+                'student_id' => $studentId,
+            ],
+            [
+                'status' => 'present',
+                'check_in_method' => 'manual',
+                'check_in_at' => now(),
+                'deleted_at' => null,
+            ]
+        );
 
         return $this->success([
             'status' => 'present',
-            'check_in_at' => $attendance->check_in_at
-        ], 'تم تسجيل الحضور يدوياً بنجاح.');
+            'check_in_at' => $attendance->check_in_at,
+        ], 'تم تسجيل الحضور بنجاح.');
     }
 
     /**
