@@ -51,19 +51,30 @@ class ScannerController extends Controller
             ], 'هذا الطالب مسجل حضوره مسبقاً في هذه المحاضرة.', 200); // Changed to success for better UX in app, or keep 409 if needed. I'll use success but with clear message.
         }
 
-        // 5. Mark Attendance (Universal Fix: Use updateOrCreate with withTrashed)
-        $attendance = Attendance::withTrashed()->updateOrCreate(
-            [
-                'lecture_id' => $lecture->id,
-                'student_id' => $student->id,
-            ],
-            [
+        // 5. Mark Attendance (Unified Fix: Explicitly check for thrashed and update)
+        $attendance = Attendance::withTrashed()
+            ->where('lecture_id', $lecture->id)
+            ->where('student_id', $student->id)
+            ->first();
+
+        if ($attendance) {
+            if ($attendance->trashed()) {
+                $attendance->restore();
+            }
+            $attendance->update([
                 'status' => 'present',
                 'check_in_at' => Carbon::now(),
                 'check_in_method' => 'qr',
-                'deleted_at' => null, // Ensure record is restored if it was soft-deleted
-            ]
-        );
+            ]);
+        } else {
+            $attendance = Attendance::create([
+                'lecture_id' => $lecture->id,
+                'student_id' => $student->id,
+                'status' => 'present',
+                'check_in_at' => Carbon::now(),
+                'check_in_method' => 'qr',
+            ]);
+        }
 
         // 6. Warning Logic: Reset streak and resolve active warnings
         if ($student->consecutive_absences > 0) {

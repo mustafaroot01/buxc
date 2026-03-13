@@ -165,26 +165,33 @@ class LectureController extends Controller
             ->where('student_id', $studentId)
             ->first();
 
-        // If it exists and is 'present', we toggle to 'absent' (Soft delete or status change)
+        // If it exists and is 'present' (not trashed), we toggle to 'absent'
         if ($existing && $existing->status === 'present' && ! $existing->trashed()) {
             $existing->delete(); // This performs soft delete
 
             return $this->success(['status' => 'absent'], 'تم إلغاء تسجيل الحضور بنجاح.');
         }
 
-        // Otherwise, we ensure it's 'present' and restored
-        $attendance = Attendance::withTrashed()->updateOrCreate(
-            [
-                'lecture_id' => $lectureId,
-                'student_id' => $studentId,
-            ],
-            [
+        // Otherwise (it's either trashed, has 'absent' status, or doesn't exist), we make it 'present'
+        if ($existing) {
+            if ($existing->trashed()) {
+                $existing->restore();
+            }
+            $existing->update([
                 'status' => 'present',
                 'check_in_method' => 'manual',
                 'check_in_at' => now(),
-                'deleted_at' => null,
-            ]
-        );
+            ]);
+            $attendance = $existing;
+        } else {
+            $attendance = Attendance::create([
+                'lecture_id' => $lectureId,
+                'student_id' => $studentId,
+                'status' => 'present',
+                'check_in_method' => 'manual',
+                'check_in_at' => now(),
+            ]);
+        }
 
         return $this->success([
             'status' => 'present',
