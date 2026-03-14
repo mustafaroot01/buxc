@@ -75,6 +75,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             // System Management (Supervisor)
             Route::get('/system', [\App\Http\Controllers\Admin\SystemController::class, 'index'])->name('system.index');
             Route::post('/system/action', [\App\Http\Controllers\Admin\SystemController::class, 'action'])->name('system.action');
+            Route::get('/system/sync-logs', [\App\Http\Controllers\Admin\SyncLogController::class, 'index'])->name('system.sync-logs');
+            Route::get('/system/sync-logs/errors', [\App\Http\Controllers\Admin\SyncLogController::class, 'errors'])->name('system.sync-logs.errors');
+            Route::get('/system/devices', [\App\Http\Controllers\Admin\DeviceController::class, 'index'])->name('system.devices.index');
+            Route::patch('/system/devices/{device}/toggle-status', [\App\Http\Controllers\Admin\DeviceController::class, 'toggleStatus'])->name('system.devices.toggle-status');
         });
     });
 

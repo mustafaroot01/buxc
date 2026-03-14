@@ -46,6 +46,25 @@ return Application::configure(basePath: dirname(__DIR__))
                     $status = 404;
                 }
 
+                // Log the error for the dashboard
+                try {
+                    \App\Models\ApiErrorLog::create([
+                        'user_id' => auth()->id(),
+                        'method' => $request->method(),
+                        'url' => $request->fullUrl(),
+                        'payload' => $request->except(['password', 'password_confirmation']),
+                        'status_code' => $status,
+                        'message' => $e->getMessage(),
+                        'exception_class' => get_class($e),
+                        'stack_trace' => collect($e->getTrace())->take(10)->toArray(),
+                        'ip_address' => $request->ip(),
+                        'device_id' => $request->header('X-Device-ID') ?? $request->input('device_id'),
+                    ]);
+                } catch (\Throwable $logError) {
+                    // Fail silently to not break the actual error response
+                    \Illuminate\Support\Facades\Log::error('Failed to log API error: ' . $logError->getMessage());
+                }
+
                 return response()->json([
                     'success' => false,
                     'message' => $message,

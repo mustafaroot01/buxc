@@ -21,7 +21,9 @@ import {
     UserIcon,
     AlertTriangleIcon,
     HeartIcon,
-    ClipboardListIcon
+    ClipboardListIcon,
+    RefreshCcwIcon,
+    SmartphoneIcon
 } from 'lucide-vue-next';
 import {
     Dialog,
@@ -54,6 +56,9 @@ const navigation = [
     
     // Super Admin only
     { name: 'سجل النشاطات', href: route('admin.audit.index'), current: route().current('admin.audit.*'), icon: ActivityIcon, roles: ['super_admin'] },
+    { name: 'أخطاء المزامنة', href: route('admin.system.sync-logs'), current: route().current('admin.system.sync-logs'), icon: RefreshCcwIcon, roles: ['super_admin'] },
+    { name: 'مركز أخطاء API', href: route('admin.system.sync-logs.errors'), current: route().current('admin.system.sync-logs.errors'), icon: AlertTriangleIcon, roles: ['super_admin'] },
+    { name: 'إدارة الأجهزة', href: route('admin.system.devices.index'), current: route().current('admin.system.devices.*'), icon: SmartphoneIcon, roles: ['super_admin'] },
     { name: 'إدارة النظام', href: route('admin.system.index'), current: route().current('admin.system.*'), icon: SettingsIcon, roles: ['admin', 'super_admin'] },
     { name: 'التسجيل', href: route('admin.registrations.index'), current: route().current('admin.registrations.*'), icon: ClipboardListIcon, roles: ['super_admin'] },
     { name: 'الإعدادات', href: route('admin.settings.index'), current: route().current('admin.settings.*'), icon: SettingsIcon, roles: ['super_admin'] },

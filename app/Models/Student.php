@@ -12,6 +12,24 @@ class Student extends Model
 {
     use HasFactory, HasUuids, LogsArabicActivity, SoftDeletes;
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($model) {
+            // Update version on every save (create or update)
+            $model->version = (int) (microtime(true) * 1000);
+        });
+
+        static::deleted(function ($model) {
+            // Update version even on soft delete
+            // Using query builder to avoid triggering events again
+            $model->newQueryWithoutScopes()
+                ->where($model->getKeyName(), $model->getKey())
+                ->update(['version' => (int) (microtime(true) * 1000)]);
+        });
+    }
+
     public function getArabicModelLabel(): string
     {
         return 'طالب';

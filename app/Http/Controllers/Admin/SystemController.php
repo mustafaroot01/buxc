@@ -61,35 +61,79 @@ class SystemController extends Controller
 
     private function getSupervisorStatus()
     {
-        $output = shell_exec("sudo supervisorctl status 2>&1");
-        $lines = explode("\n", trim($output));
-        
         $statuses = [];
-        foreach ($this->services as $id => $name) {
-            $found = false;
-            foreach ($lines as $line) {
-                if (str_contains($line, $id)) {
-                    $parts = preg_split('/\s+/', $line);
+        
+        try {
+            // Check if supervisorctl exists first to avoid hanging/errors on non-linux systems
+            $checkProcess = Process::timeout(2)->run("which supervisorctl");
+            
+            if (!$checkProcess->successful()) {
+                foreach ($this->services as $id => $name) {
                     $statuses[] = [
                         'id' => $id,
                         'name' => $name,
-                        'status' => $parts[1] ?? 'UNKNOWN',
-                        'description' => implode(' ', array_slice($parts, 2)),
+                        'status' => 'NOT INSTALLED',
+                        'description' => 'Supervisor is not installed on this system.',
                     ];
-                    $found = true;
-                    break;
+                }
+                return $statuses;
+            }
+
+            // Run status command with a short timeout to prevent server hang
+            $process = Process::timeout(5)->run("sudo supervisorctl status 2>&1");
+            $output = $process->output();
+            
+            // If sudo prompt or error, successful() might be false or output might contain 'sudo'
+            if (!$process->successful() || str_contains($output, 'password')) {
+                foreach ($this->services as $id => $name) {
+                    $statuses[] = [
+                        'id' => $id,
+                        'name' => $name,
+                        'status' => 'ACCESS DENIED',
+                        'description' => 'Cannot access supervisor (sudo password required or permission denied).',
+                    ];
+                }
+                return $statuses;
+            }
+
+            $lines = explode("\n", trim($output));
+            
+            foreach ($this->services as $id => $name) {
+                $found = false;
+                foreach ($lines as $line) {
+                    if (str_contains($line, $id)) {
+                        $parts = preg_split('/\s+/', $line);
+                        $statuses[] = [
+                            'id' => $id,
+                            'name' => $name,
+                            'status' => $parts[1] ?? 'UNKNOWN',
+                            'description' => implode(' ', array_slice($parts, 2)),
+                        ];
+                        $found = true;
+                        break;
+                    }
+                }
+                
+                if (!$found) {
+                    $statuses[] = [
+                        'id' => $id,
+                        'name' => $name,
+                        'status' => 'NOT FOUND',
+                        'description' => 'الخدمة غير معرفة في Supervisor',
+                    ];
                 }
             }
-            if (!$found) {
+        } catch (\Exception $e) {
+            foreach ($this->services as $id => $name) {
                 $statuses[] = [
                     'id' => $id,
                     'name' => $name,
-                    'status' => 'NOT FOUND',
-                    'description' => 'الخدمة غير معرفة في Supervisor',
+                    'status' => 'ERROR',
+                    'description' => 'System error checking status: ' . $e->getMessage(),
                 ];
             }
         }
-
+        
         return $statuses;
     }
 

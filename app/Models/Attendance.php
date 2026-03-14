@@ -18,11 +18,15 @@ class Attendance extends Model
         'student_id',
         'status',
         'check_in_at',
-        'check_in_method'
+        'check_in_method',
+        'device_id',
+        'scanned_at',
+        'request_id',
     ];
 
     protected $casts = [
         'check_in_at' => 'datetime',
+        'scanned_at' => 'datetime',
     ];
 
     public function lecture()

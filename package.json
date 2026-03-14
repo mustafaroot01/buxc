@@ -26,6 +26,7 @@
     },
     "dependencies": {
         "@headlessui/vue": "^1.7.23",
+        "date-fns": "^4.1.0",
         "html5-qrcode": "^2.3.8",
         "laravel-echo": "^2.3.0",
         "lucide-vue-next": "^0.577.0",

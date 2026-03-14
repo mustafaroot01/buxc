@@ -38,11 +38,18 @@ Route::prefix('v1')->group(function () {
             // Profile
             Route::get('/profile', [\App\Http\Controllers\Api\Teacher\ProfileController::class, 'show']);
             Route::post('/profile', [\App\Http\Controllers\Api\Teacher\ProfileController::class, 'update']);
+
+            // Sync Students
+            Route::get('/students', [\App\Http\Controllers\Api\Teacher\StudentSyncController::class, 'index']);
+
+            // Sync Lectures
+            Route::get('/lectures/sync', [\App\Http\Controllers\Api\Teacher\LectureSyncController::class, 'index']);
         });
 
         // Rate limiting: 60 requests per minute configuration applied to Scanner
         Route::middleware(['throttle:60,1'])->group(function () {
             Route::post('/scan', [ScannerController::class, 'scan'])->name('api.scan');
+            Route::post('/attendance/sync', [\App\Http\Controllers\Api\AttendanceSyncController::class, 'store']);
         });
     });
 });
