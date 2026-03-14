@@ -14,7 +14,7 @@ class DeviceController extends Controller
     public function index()
     {
         $devices = Device::latest('last_seen_at')
-            ->paginate(20, ['*'], 'page', null);
+            ->paginate(20);
 
         return Inertia::render('Admin/System/Devices', [
             'devices' => $devices,

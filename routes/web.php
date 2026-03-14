@@ -78,6 +78,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/system/action', [\App\Http\Controllers\Admin\SystemController::class, 'action'])->name('system.action');
             Route::get('/system/sync-logs', [\App\Http\Controllers\Admin\SyncLogController::class, 'index'])->name('system.sync-logs');
             Route::get('/system/sync-logs/errors', [\App\Http\Controllers\Admin\SyncLogController::class, 'errors'])->name('system.sync-logs.errors');
+            Route::delete('/system/sync-logs/errors/clear', [\App\Http\Controllers\Admin\SyncLogController::class, 'clearErrors'])->name('system.sync-logs.errors.clear');
             Route::get('/system/devices', [\App\Http\Controllers\Admin\DeviceController::class, 'index'])->name('system.devices.index');
             Route::patch('/system/devices/{device}/toggle-status', [\App\Http\Controllers\Admin\DeviceController::class, 'toggleStatus'])->name('system.devices.toggle-status');
             Route::get('/system/health', [\App\Http\Controllers\Admin\ServerHealthController::class, 'index'])->name('system.health');

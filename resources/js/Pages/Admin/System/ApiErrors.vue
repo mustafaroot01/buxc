@@ -14,10 +14,16 @@ import {
     GlobeIcon,
     CodeIcon,
     TerminalIcon,
-    DatabaseIcon
+    DatabaseIcon,
+    Trash2Icon
 } from 'lucide-vue-next';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { ref } from 'vue';
+import { router } from '@inertiajs/vue3';
+import Modal from '@/Components/Modal.vue';
+import DangerButton from '@/Components/DangerButton.vue';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
 
 const props = defineProps<{
     logs: {
@@ -55,6 +61,15 @@ const getStatusColor = (code: number) => {
     if (code >= 400) return 'bg-amber-100 text-amber-700 border-amber-200';
     return 'bg-blue-100 text-blue-700 border-blue-200';
 };
+
+const confirmingClear = ref(false);
+
+const clearLogs = () => {
+    router.delete(route('admin.system.sync-logs.errors.clear'), {
+        onSuccess: () => confirmingClear.value = false,
+        onFinish: () => confirmingClear.value = false,
+    });
+};
 </script>
 
 <template>
@@ -74,6 +89,14 @@ const getStatusColor = (code: number) => {
                 </div>
                 
                 <div class="flex gap-2">
+                    <button 
+                        @click="confirmingClear = true"
+                        class="px-5 py-2.5 rounded-2xl text-sm font-black transition-all flex items-center gap-2 border bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100 shadow-sm"
+                        v-if="logs.total > 0"
+                    >
+                        <Trash2Icon class="w-4 h-4" />
+                        تصفير السجل
+                    </button>
                     <Link 
                         :href="route('admin.system.sync-logs')"
                         class="px-5 py-2.5 rounded-2xl text-sm font-black transition-all flex items-center gap-2 border bg-white text-gray-700 border-gray-200 hover:border-teal-300 hover:text-teal-600 shadow-sm"
@@ -216,6 +239,39 @@ const getStatusColor = (code: number) => {
                 </div>
             </div>
         </div>
+
+        <!-- Clear Confirmation Modal -->
+        <Modal :show="confirmingClear" @close="confirmingClear = false" maxWidth="md">
+            <div class="p-8 text-right">
+                <div class="flex items-center justify-center w-16 h-16 mx-auto mb-6 bg-rose-50 rounded-full">
+                    <Trash2Icon class="w-8 h-8 text-rose-600" />
+                </div>
+                
+                <h3 class="text-xl font-black text-center text-gray-900 mb-2">
+                    تصفير سجل الأخطاء
+                </h3>
+                
+                <p class="text-center text-gray-500 text-sm leading-relaxed mb-8">
+                    هل أنت متأكد من رغبتك في حذف كافة سجلات الأخطاء؟ هذه العملية لا يمكن التراجع عنها وسيتم مسح {{ logs.total }} سجل.
+                </p>
+
+                <div class="flex items-center gap-3">
+                    <DangerButton 
+                        class="flex-1 justify-center py-3 rounded-xl font-bold"
+                        @click="clearLogs"
+                    >
+                        تأكيد التصفير
+                    </DangerButton>
+                    
+                    <SecondaryButton 
+                        class="flex-1 justify-center py-3 rounded-xl font-bold border-gray-200"
+                        @click="confirmingClear = false"
+                    >
+                        إلغاء
+                    </SecondaryButton>
+                </div>
+            </div>
+        </Modal>
     </AuthenticatedLayout>
 </template>
 

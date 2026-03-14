@@ -48,4 +48,9 @@ class SyncLogController extends Controller
             'logs' => $logs
         ]);
     }
+    public function clearErrors()
+    {
+        \App\Models\ApiErrorLog::truncate();
+        return back()->with('success', 'تم تصفير سجل أخطاء الـ API بنجاح.');
+    }
 }
