@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { PlusIcon, SearchIcon, UsersIcon, Trash2Icon, PencilIcon, AlertTriangleIcon } from 'lucide-vue-next';
+import { PlusIcon, SearchIcon, UsersIcon, Trash2Icon, PencilIcon, AlertTriangleIcon, RefreshCcwIcon } from 'lucide-vue-next';
 import Modal from '@/Components/Modal.vue';
 import DangerButton from '@/Components/DangerButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
@@ -14,7 +14,22 @@ defineProps<{
 }>();
 
 const confirmingTeacherDeletion = ref(false);
+const confirmingRevocation = ref(false);
 const teacherToEdit = ref<any>(null);
+
+const revokeSessions = (teacher: any) => {
+    teacherToEdit.value = teacher;
+    confirmingRevocation.value = true;
+};
+
+const confirmRevokeSessions = () => {
+    if (teacherToEdit.value) {
+        router.post(route('admin.teachers.revoke-sessions', teacherToEdit.value.id), {}, {
+            onSuccess: () => closeModal(),
+            onFinish: () => closeModal(),
+        });
+    }
+};
 
 const deleteTeacher = (teacher: any) => {
     teacherToEdit.value = teacher;
@@ -109,6 +124,9 @@ const confirmDeleteTeacher = () => {
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
                                         <div class="flex items-center justify-end gap-2">
+                                            <button @click="revokeSessions(teacher)" class="p-2 text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors" title="إلغاء ارتباط الأجهزة (Revoke Sessions)">
+                                                <RefreshCcwIcon class="w-4 h-4" />
+                                            </button>
                                             <Link :href="route('admin.teachers.edit', teacher.id)" class="p-2 text-teal-600 bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors" title="تعديل">
                                                 <PencilIcon class="w-4 h-4" />
                                             </Link>
@@ -168,5 +186,48 @@ const confirmDeleteTeacher = () => {
                 </div>
             </div>
         </Modal>
+
+        <!-- Session Revocation Confirmation Modal -->
+        <Modal :show="confirmingRevocation" @close="closeModal" maxWidth="md">
+            <div class="p-8 text-right">
+                <div class="flex items-center justify-center w-16 h-16 mx-auto mb-6 bg-amber-50 rounded-full">
+                    <RefreshCcwIcon class="w-8 h-8 text-amber-600 animate-spin-slow" />
+                </div>
+                
+                <h3 class="text-xl font-black text-center text-gray-900 mb-2">
+                    إلغاء ارتباط الأجهزة
+                </h3>
+                
+                <p class="text-center text-gray-500 text-sm leading-relaxed mb-8">
+                    هل أنت متأكد من رغبتك في إلغاء كافة الجلسات النشطة للأستاذ <span class="font-bold text-gray-900">{{ teacherToEdit?.full_name }}</span>؟ هذا سيؤدي إلى تسجيل خروج الأستاذ من كافة الأجهزة المرتبطة حالياً.
+                </p>
+
+                <div class="flex items-center gap-3">
+                    <button 
+                        class="flex-1 justify-center py-3 rounded-xl font-bold bg-amber-600 text-white hover:bg-amber-700 transition-colors shadow-lg shadow-amber-200"
+                        @click="confirmRevokeSessions"
+                    >
+                        تأكيد إلغاء الارتباط
+                    </button>
+                    
+                    <SecondaryButton 
+                        class="flex-1 justify-center py-3 rounded-xl font-bold border-gray-200"
+                        @click="closeModal"
+                    >
+                        تراجع
+                    </SecondaryButton>
+                </div>
+            </div>
+        </Modal>
     </AuthenticatedLayout>
 </template>
+
+<style scoped>
+.animate-spin-slow {
+    animation: spin 3s linear infinite;
+}
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+</style>

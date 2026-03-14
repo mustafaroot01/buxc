@@ -129,4 +129,11 @@ class TeacherController extends Controller
 
         return redirect()->route('admin.teachers.index')->with('success', 'تم حذف الأستاذ بنجاح.');
     }
+
+    public function revokeSessions(User $teacher)
+    {
+        $teacher->tokens()->delete();
+
+        return back()->with('success', 'تم إلغاء كافة جلسات الأستاذ (فك الارتباط) بنجاح.');
+    }
 }

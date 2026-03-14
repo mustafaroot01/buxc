@@ -23,6 +23,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Core Management Modules
         Route::resource('teachers', \App\Http\Controllers\Admin\TeacherController::class);
+        Route::post('teachers/{teacher}/revoke-sessions', [\App\Http\Controllers\Admin\TeacherController::class, 'revokeSessions'])->name('teachers.revoke-sessions');
         Route::resource('stages', \App\Http\Controllers\Admin\AcademicStageController::class);
         Route::resource('groups', \App\Http\Controllers\Admin\AcademicGroupController::class);
         Route::resource('subjects', \App\Http\Controllers\Admin\SubjectController::class);
