@@ -164,7 +164,8 @@ class ServerHealthController extends Controller
     private function getActiveWorkersCount()
     {
         if (PHP_OS_FAMILY === 'Linux') {
-            $output = shell_exec('ps aux | grep "php artisan queue:work" | grep -v grep | wc -l');
+            // Count various types of workers (queue:work, queue:listen, horizon:work)
+            $output = shell_exec('ps aux | grep -E "artisan (queue:work|queue:listen|horizon:work)" | grep -v grep | wc -l');
             return (int) trim($output);
         }
         return 'N/A';
