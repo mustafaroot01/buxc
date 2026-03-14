@@ -55,10 +55,10 @@ class ScannerController extends Controller
 
         $lecture->update(['status' => 'closed']);
 
-        // --- Fix: Dispatch Sync to process absences immediately ---
-        ProcessLectureAbsences::dispatchSync($lecture);
+        // --- Fix: Dispatch to background queue to process absences without blocking the UI ---
+        ProcessLectureAbsences::dispatch($lecture);
 
-        return redirect()->route('teacher.dashboard')->with('success', 'تم إنهاء المحاضرة بنجاح وتم تسجيل غياب الطلاب المتغيبين.');
+        return redirect()->route('teacher.dashboard')->with('success', 'تم إنهاء المحاضرة بنجاح ويجري معالجة غياب الطلاب في الخلفية.');
     }
 
     public function store(Request $request, $id)

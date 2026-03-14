@@ -216,12 +216,12 @@ class LectureController extends Controller
 
         $lecture->update(['status' => $validated['status']]);
 
-        // If lecture is closed, process absences immediately
+        // If lecture is closed, process absences in the background
         if ($validated['status'] === 'closed') {
-            ProcessLectureAbsences::dispatchSync($lecture);
+            \App\Jobs\ProcessLectureAbsences::dispatch($lecture);
         }
 
-        return $this->success($lecture, 'تم تحديث حالة المحاضرة ومعالجة الغيابات بنجاح.');
+        return $this->success($lecture, 'تم تحديث حالة المحاضرة ويجري معالجة الغيابات في الخلفية.');
     }
 
     /**

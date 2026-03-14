@@ -91,8 +91,13 @@ class ScannerController extends Controller
             'time' => $attendance->check_in_at->format('H:i'),
         ];
 
-        // Broadcast the real-time event to the frontend
-        broadcast(new StudentScanned($lecture->id, $studentData));
+        // Broadcast the real-time event to the frontend (Web Dashboard)
+        try {
+            broadcast(new StudentScanned($lecture->id, $studentData));
+        } catch (\Exception $e) {
+            // Silently fail broadcasting errors to prevent blocking the scanner's response
+            \Illuminate\Support\Facades\Log::warning("Broadcasting failed for student {$student->id} in lecture {$lecture->id}: " . $e->getMessage());
+        }
 
         return $this->success($studentData, 'تم تسجيل حضور الطالب بنجاح.');
     }
