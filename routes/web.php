@@ -71,6 +71,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/registrations/{id}/approve-all', [RegistrationFormController::class, 'approveAll'])->name('registrations.approve-all');
             Route::post('/registrations/{id}/reject/{submissionId}', [RegistrationFormController::class, 'reject'])->name('registrations.reject');
             Route::delete('/registrations/{id}', [RegistrationFormController::class, 'destroy'])->name('registrations.destroy');
+
+            // System Management (Supervisor)
+            Route::get('/system', [\App\Http\Controllers\Admin\SystemController::class, 'index'])->name('system.index');
+            Route::post('/system/action', [\App\Http\Controllers\Admin\SystemController::class, 'action'])->name('system.action');
         });
     });
 

@@ -54,6 +54,7 @@ const navigation = [
     
     // Super Admin only
     { name: 'سجل النشاطات', href: route('admin.audit.index'), current: route().current('admin.audit.*'), icon: ActivityIcon, roles: ['super_admin'] },
+    { name: 'إدارة النظام', href: route('admin.system.index'), current: route().current('admin.system.*'), icon: SettingsIcon, roles: ['super_admin'] },
     { name: 'التسجيل', href: route('admin.registrations.index'), current: route().current('admin.registrations.*'), icon: ClipboardListIcon, roles: ['super_admin'] },
     { name: 'الإعدادات', href: route('admin.settings.index'), current: route().current('admin.settings.*'), icon: SettingsIcon, roles: ['super_admin'] },
     
