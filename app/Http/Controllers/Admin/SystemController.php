@@ -43,11 +43,15 @@ class SystemController extends Controller
             return back()->with('error', 'خدمة غير معروفة.');
         }
 
-        // We try to run supervisorctl. 
-        // Note: This requires the web user to have sudo access for supervisorctl without password.
-        $result = shell_exec("sudo supervisorctl {$action} {$service} 2>&1");
+        // We try to run supervisorctl with group syntax if needed
+        $fullCommand = "sudo /usr/bin/supervisorctl {$action} {$service}:* 2>&1";
+        $result = shell_exec($fullCommand);
 
-        return back()->with('success', "تم تنفيذ العملية بنجاح: {$result}");
+        if (str_contains(strtolower($result), 'error') || str_contains(strtolower($result), 'failed')) {
+            return back()->with('error', "فشل التنفيذ: " . $result);
+        }
+
+        return back()->with('success', "تم تنفيذ ({$action}) بنجاح: " . ($result ?: 'تم إرسال الأمر'));
     }
 
     private function getSupervisorStatus()
