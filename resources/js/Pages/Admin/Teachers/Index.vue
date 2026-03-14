@@ -15,16 +15,17 @@ defineProps<{
 
 const confirmingTeacherDeletion = ref(false);
 const confirmingRevocation = ref(false);
-const teacherToEdit = ref<any>(null);
+const teacherToDelete = ref<any>(null);
+const teacherToRevoke = ref<any>(null);
 
 const revokeSessions = (teacher: any) => {
-    teacherToEdit.value = teacher;
+    teacherToRevoke.value = teacher;
     confirmingRevocation.value = true;
 };
 
 const confirmRevokeSessions = () => {
-    if (teacherToEdit.value) {
-        router.post(route('admin.teachers.revoke-sessions', teacherToEdit.value.id), {}, {
+    if (teacherToRevoke.value) {
+        router.post(route('admin.teachers.revoke-sessions', teacherToRevoke.value.id), {}, {
             onSuccess: () => closeModal(),
             onFinish: () => closeModal(),
         });
@@ -32,19 +33,24 @@ const confirmRevokeSessions = () => {
 };
 
 const deleteTeacher = (teacher: any) => {
-    teacherToEdit.value = teacher;
+    teacherToDelete.value = teacher;
     confirmingTeacherDeletion.value = true;
 };
 
 const closeModal = () => {
     confirmingTeacherDeletion.value = false;
     confirmingRevocation.value = false;
-    teacherToEdit.value = null;
+    
+    // Delay clearing the data to prevent flickering during animation
+    setTimeout(() => {
+        teacherToDelete.value = null;
+        teacherToRevoke.value = null;
+    }, 300);
 };
 
 const confirmDeleteTeacher = () => {
-    if (teacherToEdit.value) {
-        router.delete(route('admin.teachers.destroy', teacherToEdit.value.id), {
+    if (teacherToDelete.value) {
+        router.delete(route('admin.teachers.destroy', teacherToDelete.value.id), {
             onSuccess: () => closeModal(),
             onFinish: () => closeModal(),
         });
@@ -167,7 +173,7 @@ const confirmDeleteTeacher = () => {
                 </h3>
                 
                 <p class="text-center text-gray-500 text-sm leading-relaxed mb-8">
-                    هل أنت متأكد من رغبتك في حذف الأستاذ <span class="font-bold text-gray-900">{{ teacherToEdit?.full_name }}</span>؟ سيتم إزالة حسابه من النظام بشكل نهائي.
+                    هل أنت متأكد من رغبتك في حذف الأستاذ <span class="font-bold text-gray-900">{{ teacherToDelete?.full_name }}</span>؟ سيتم إزالة حسابه من النظام بشكل نهائي.
                 </p>
 
                 <div class="flex items-center gap-3">
@@ -200,7 +206,7 @@ const confirmDeleteTeacher = () => {
                 </h3>
                 
                 <p class="text-center text-gray-500 text-sm leading-relaxed mb-8">
-                    هل أنت متأكد من رغبتك في إلغاء كافة الجلسات النشطة للأستاذ <span class="font-bold text-gray-900">{{ teacherToEdit?.full_name }}</span>؟ هذا سيؤدي إلى تسجيل خروج الأستاذ من كافة الأجهزة المرتبطة حالياً.
+                    هل أنت متأكد من رغبتك في إلغاء كافة الجلسات النشطة للأستاذ <span class="font-bold text-gray-900">{{ teacherToRevoke?.full_name }}</span>؟ هذا سيؤدي إلى تسجيل خروج الأستاذ من كافة الأجهزة المرتبطة حالياً.
                 </p>
 
                 <div class="flex items-center gap-3">
