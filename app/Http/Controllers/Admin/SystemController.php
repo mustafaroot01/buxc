@@ -43,12 +43,17 @@ class SystemController extends Controller
             return back()->with('error', 'خدمة غير معروفة.');
         }
 
-        // We try to run supervisorctl with group syntax if needed
-        $fullCommand = "sudo /usr/bin/supervisorctl {$action} {$service}:* 2>&1";
-        $result = shell_exec($fullCommand);
+        // Use more precise targeting to avoid stopping other services
+        // If it's a multi-process service (like worker), we use group:*
+        // If it shows up as group:process in status, we target group:*
+        $target = $service . ':*';
+        
+        $process = \Illuminate\Support\Facades\Process::run("sudo /usr/bin/supervisorctl {$action} {$target}");
+        $result = $process->output();
+        $error = $process->errorOutput();
 
-        if (str_contains(strtolower($result), 'error') || str_contains(strtolower($result), 'failed')) {
-            return back()->with('error', "فشل التنفيذ: " . $result);
+        if (!$process->successful() || str_contains(strtolower($result . $error), 'error') || str_contains(strtolower($result . $error), 'failed')) {
+            return back()->with('error', "فشل التنفيذ: " . ($result ?: $error));
         }
 
         return back()->with('success', "تم تنفيذ ({$action}) بنجاح: " . ($result ?: 'تم إرسال الأمر'));
