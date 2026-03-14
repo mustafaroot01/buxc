@@ -92,7 +92,6 @@ const clearLogs = () => {
                     <button 
                         @click="confirmingClear = true"
                         class="px-5 py-2.5 rounded-2xl text-sm font-black transition-all flex items-center gap-2 border bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100 shadow-sm"
-                        v-if="logs.total > 0"
                     >
                         <Trash2Icon class="w-4 h-4" />
                         تصفير السجل
