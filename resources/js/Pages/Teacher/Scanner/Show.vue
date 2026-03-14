@@ -218,13 +218,12 @@ const processScanRequest = async (qr_payload: string) => {
         playSound('error');
     }
 
-    clearTimeout(scanTimeout);
     scanTimeout = setTimeout(() => {
         if(scannerStatus.value !== 'scanning') {
             scannerStatus.value = 'scanning';
             lastScanMessage.value = '';
         }
-    }, 1500);
+    }, 500);
 };
 
 const showCloseModal = ref(false);

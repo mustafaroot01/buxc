@@ -87,6 +87,7 @@ class ScannerController extends Controller
 
         $studentData = [
             'name' => $student->full_name,
+            'external_id' => $student->student_external_id,
             'photo_url' => $student->photo_path ? asset('storage/'.$student->photo_path) : null,
             'time' => $attendance->check_in_at->format('H:i'),
         ];
