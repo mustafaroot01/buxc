@@ -38,6 +38,7 @@ const deleteTeacher = (teacher: any) => {
 
 const closeModal = () => {
     confirmingTeacherDeletion.value = false;
+    confirmingRevocation.value = false;
     teacherToEdit.value = null;
 };
 
