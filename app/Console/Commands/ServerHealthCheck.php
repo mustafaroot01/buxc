@@ -75,8 +75,9 @@ class ServerHealthCheck extends Command
 
         // 5. System Resources (Safe checks)
         $this->checkComponent("Disk Space", function() {
-            $free = disk_free_space("/") / (1024 * 1024 * 1024);
-            $total = disk_total_space("/") / (1024 * 1024 * 1024);
+            $path = base_path();
+            $free = disk_free_space($path) / (1024 * 1024 * 1024);
+            $total = disk_total_space($path) / (1024 * 1024 * 1024);
             $percent = round((1 - ($free / $total)) * 100);
             return "Usage: $percent% (" . round($free, 2) . " GB Free)";
         });
