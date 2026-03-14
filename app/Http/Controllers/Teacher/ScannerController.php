@@ -137,7 +137,18 @@ class ScannerController extends Controller
                 ->update(['resolved_at' => now()]);
         }
 
-        // (Optional) Fire event to WebSocket here
+        // Fire event to WebSocket here
+        try {
+            $studentData = [
+                'name' => trim("{$student->first_name} {$student->second_name} {$student->last_name}"),
+                'external_id' => $student->student_external_id,
+                'time' => now()->format('h:i:s A'),
+                'photo_url' => $student->photo_path ? asset('storage/'.$student->photo_path) : null,
+            ];
+            broadcast(new \App\Events\StudentScanned($lecture->id, $studentData));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning("Broadcasting failed from Web Scanner for student {$student->id}: " . $e->getMessage());
+        }
 
         return response()->json([
             'success' => true,
