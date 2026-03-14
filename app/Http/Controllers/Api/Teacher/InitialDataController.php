@@ -37,6 +37,7 @@ class InitialDataController extends Controller
                             'name' => $group->name,
                             'stage_id' => $group->stage_id,
                             'stage_name' => $group->stage->name ?? 'N/A',
+                            'study_type' => $group->study_type ?? 'morning',
                         ];
                     }),
                 ];
