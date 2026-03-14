@@ -79,6 +79,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/system/sync-logs/errors', [\App\Http\Controllers\Admin\SyncLogController::class, 'errors'])->name('system.sync-logs.errors');
             Route::get('/system/devices', [\App\Http\Controllers\Admin\DeviceController::class, 'index'])->name('system.devices.index');
             Route::patch('/system/devices/{device}/toggle-status', [\App\Http\Controllers\Admin\DeviceController::class, 'toggleStatus'])->name('system.devices.toggle-status');
+            Route::get('/system/health', [\App\Http\Controllers\Admin\ServerHealthController::class, 'index'])->name('system.health');
         });
     });
 
