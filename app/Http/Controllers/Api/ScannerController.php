@@ -46,9 +46,10 @@ class ScannerController extends Controller
             return $this->success([
                 'student' => [
                     'name' => $student->full_name,
+                    'external_id' => $student->student_external_id,
                     'time' => $existingAttendance->check_in_at->format('H:i'),
                 ],
-            ], 'هذا الطالب مسجل حضوره مسبقاً في هذه المحاضرة.', 200); // Changed to success for better UX in app, or keep 409 if needed. I'll use success but with clear message.
+            ], 'هذا الطالب مسجل حضوره مسبقاً في هذه المحاضرة.', 200);
         }
 
         // 5. Mark Attendance (Unified Fix: Explicitly check for thrashed and update)
@@ -88,7 +89,6 @@ class ScannerController extends Controller
         $studentData = [
             'name' => $student->full_name,
             'external_id' => $student->student_external_id,
-            'photo_url' => $student->photo_path ? asset('storage/'.$student->photo_path) : null,
             'time' => $attendance->check_in_at->format('H:i'),
         ];
 
@@ -100,6 +100,6 @@ class ScannerController extends Controller
             \Illuminate\Support\Facades\Log::warning("Broadcasting failed for student {$student->id} in lecture {$lecture->id}: " . $e->getMessage());
         }
 
-        return $this->success($studentData, 'تم تسجيل حضور الطالب بنجاح.');
+        return $this->success(['student' => $studentData], 'تم تسجيل حضور الطالب بنجاح.');
     }
 }
