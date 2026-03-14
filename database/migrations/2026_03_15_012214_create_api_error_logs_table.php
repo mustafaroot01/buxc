@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('api_error_logs', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
+            $table->foreignUuid('user_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('method');
             $table->string('url');
             $table->json('payload')->nullable();
