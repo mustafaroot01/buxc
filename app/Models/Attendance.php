@@ -39,18 +39,6 @@ class Attendance extends Model
         return $this->belongsTo(Student::class, 'student_id');
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Activity Log Settings
-    |--------------------------------------------------------------------------
-    */
-
-    public function getActivitylogOptions(): \Spatie\Activitylog\LogOptions
-    {
-        return $this->defaultLogOptions()
-            ->dontLogAttributes(['request_id']);
-    }
-
     public function getArabicModelLabel(): string
     {
         return 'تحضير طالب';

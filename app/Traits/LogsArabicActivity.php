@@ -11,10 +11,19 @@ trait LogsArabicActivity
 
     public function getActivitylogOptions(): LogOptions
     {
+        return $this->defaultLogOptions();
+    }
+
+    /**
+     * Define the default activity log options.
+     */
+    protected function defaultLogOptions(): LogOptions
+    {
         return LogOptions::defaults()
             ->logFillable()
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
+            ->logExcept(['request_id', 'qr_payload']) // Binary/sensitive fields
             ->setDescriptionForEvent(function (string $eventName) {
                 $modelLabel = $this->getArabicModelLabel();
 
