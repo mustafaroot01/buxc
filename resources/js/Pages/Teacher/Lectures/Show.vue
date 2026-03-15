@@ -68,12 +68,8 @@ const localSummary = computed(() => ({
     absent:  localStudents.value.filter(s => s.status === 'absent').length,
 }));
 
-// Lock edits if lecture is older than 24 hours (regardless of status)
-const isLocked = computed(() => {
-    const start = new Date(props.lecture.start_time).getTime();
-    const diffHours = (Date.now() - start) / 36e5;
-    return diffHours >= 24;
-});
+// Edits are now always allowed regardless of time (Phase 16 Optimization)
+const isLocked = computed(() => false);
 
 // ── Manual attendance toggle ─────────────────────────────────────────────────
 const markLoading = (id: string, flag: boolean) => {
@@ -260,14 +256,10 @@ const formatTime = (dt: string) =>
                         </div>
                     </div>
 
-                    <!-- Manual attendance tip / Lock warning -->
-                    <div v-if="isLocked" class="mx-4 mt-3 mb-2 px-3 py-2 bg-red-50 rounded-xl border border-red-200 flex items-center gap-2 text-xs text-red-700">
-                        <ClockIcon class="w-3.5 h-3.5 flex-shrink-0" />
-                        <span><strong>عذراً:</strong> لقد مر أكثر من 24 ساعة على المحاضرة. لا يمكن تعديل المشاهدات الآن لحماية البيانات.</span>
-                    </div>
-                    <div v-else class="mx-4 mt-3 mb-2 px-3 py-2 bg-amber-50 rounded-xl border border-amber-200 flex items-center gap-2 text-xs text-amber-700">
+                    <!-- Manual attendance tip -->
+                    <div class="mx-4 mt-3 mb-2 px-3 py-2 bg-amber-50 rounded-xl border border-amber-200 flex items-center gap-2 text-xs text-amber-700">
                         <HandIcon class="w-3.5 h-3.5 flex-shrink-0" />
-                        <span>اضغط على زر الحالة لتغييرها يدوياً · يمكن التعديل خلال 24 ساعة من بدء المحاضرة</span>
+                        <span>اضغط على زر الحالة لتغييرها يدوياً. التعديل متاح دائماً.</span>
                     </div>
 
                     <!-- Table Head (Desktop only) -->
