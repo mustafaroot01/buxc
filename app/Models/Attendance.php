@@ -24,6 +24,10 @@ class Attendance extends Model
         'request_id',
     ];
 
+    protected $hidden = [
+        'request_id',
+    ];
+
     protected $casts = [
         'check_in_at' => 'datetime',
         'scanned_at' => 'datetime',

@@ -57,6 +57,10 @@ class Student extends Model
         'consecutive_absences',
     ];
 
+    protected $hidden = [
+        'qr_payload',
+    ];
+
     public function group()
     {
         return $this->belongsTo(AcademicGroup::class, 'group_id');
