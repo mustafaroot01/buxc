@@ -25,8 +25,8 @@ class SyncLogController extends Controller
             'total_scans_today' => AttendanceSyncLog::whereDate('synced_at', '=', Carbon::today(), 'and')->sum('scans_processed'),
             'failed_syncs_today' => AttendanceSyncLog::whereDate('synced_at', '=', Carbon::today(), 'and')
                 ->where(function ($query) {
-                    $query->where('status', '=', 'failed', 'and')
-                        ->orWhere('status', '=', 'partial', 'and');
+                    $query->where('status', '=', AttendanceSyncLog::STATUS_FAILED, 'and')
+                        ->orWhere('status', '=', AttendanceSyncLog::STATUS_PARTIAL, 'and');
                 }, null, null, 'and')->count('id'),
             'avg_duration_ms' => round(AttendanceSyncLog::whereDate('synced_at', '=', Carbon::today(), 'and')->avg('duration_ms') ?? 0),
             'total_devices' => AttendanceSyncLog::distinct('device_id')->count('device_id'),

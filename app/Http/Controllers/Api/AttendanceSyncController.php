@@ -31,6 +31,7 @@ class AttendanceSyncController extends Controller
             'device_info.os_version' => 'nullable|string',
             'device_info.app_version' => 'nullable|string',
             'sent_at' => 'required|date',
+            'action_type' => 'nullable|string|in:scan,manual', // Optional, defaults to scan if not provided
             'scans' => 'required|array',
             'scans.*.student_id' => 'required|exists:students,id',
             'scans.*.scanned_at' => 'required|date',
@@ -164,13 +165,16 @@ class AttendanceSyncController extends Controller
                 'os_version' => $request->device_info['os_version'] ?? null,
                 'app_version' => $request->device_info['app_version'] ?? null,
                 'lecture_id' => $lecture->id,
+                'action_type' => $request->action_type ?? AttendanceSyncLog::ACTION_SCAN,
                 'scans_received' => $scansCount,
                 'scans_processed' => $processedCount,
                 'failed_scans' => $failedCount,
                 'sent_at' => Carbon::parse($request->sent_at),
                 'synced_at' => now(),
                 'duration_ms' => $durationMs,
-                'status' => $failedCount === 0 ? 'success' : ($processedCount > 0 ? 'partial' : 'failed'),
+                'status' => $failedCount === 0 
+                    ? AttendanceSyncLog::STATUS_SUCCESS 
+                    : ($processedCount > 0 ? AttendanceSyncLog::STATUS_PARTIAL : AttendanceSyncLog::STATUS_FAILED),
                 'error_details' => !empty($errorDetails) ? $errorDetails : null,
             ]);
 

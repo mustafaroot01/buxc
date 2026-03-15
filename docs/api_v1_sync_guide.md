@@ -109,8 +109,14 @@
 {
   "sync_id": "unique-uuid",
   "lecture_id": "lecture-uuid",
-  "device_info": { "id": "uuid", "model": "S24 Ultra" },
-  "sent_at": "2026-03-15T10:00:00Z",
+  "device_info": {
+    "id": "device_unique_id",
+    "model": "iPhone 13",
+    "os_version": "iOS 17.1",
+    "app_version": "1.0.4"
+  },
+  "action_type": "scan", // "scan" (QR) or "manual" (Teacher manual entry)
+  "sent_at": "2024-03-15T10:00:00Z",
   "scans": [
     {
       "student_id": "student-uuid",
