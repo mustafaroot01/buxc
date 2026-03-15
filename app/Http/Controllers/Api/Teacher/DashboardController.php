@@ -57,8 +57,8 @@ class DashboardController extends Controller
 
         return response()->json([
             'stats' => $stats,
-            'active_lectures' => $activeLectures,
-            'recent_warnings' => $recentWarnings,
+            'active_lectures' => $activeLectures->toArray(),
+            'recent_warnings' => $recentWarnings->toArray(),
         ]);
     }
 }
