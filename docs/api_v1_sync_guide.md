@@ -1,58 +1,115 @@
-# دليل تكامل API المزامنة (v1) - تحديث مارس 2026
+# دليل التكامل التقني لـ API (v1) - نظام الحضور والغياب 📱🌐
 
-هذا الدليل مخصص لمطوري التطبيقات لربط نظام الحضور والغياب مع السيرفر، مع دعم كامل للمزامنة الأوفلاين (Offline Sync).
+هذا الدليل موجه لمطور تطبيقات الموبايل. يغطي جميع المسارات (Endpoints) اللازمة لبناء نظام يعمل بكفاءة عالية مع دعم المزامنة "أوفلاين".
 
 ---
 
-## 1. المدخل الرئيسي للبيانات (Aggregate Init)
-بدلاً من طلب كل قائمة على حدة عند فتح التطبيق، استخدم هذا المسار لجلب (البروفايل + المواد + المحاضرات النشطة اليوم) في طلب واحد.
+## 1. المعلومات الأساسية (Base Info)
+- **Base URL:** `https://bucx.diyala.net/api/v1`
+- **Headers:** 
+  - `Accept: application/json`
+  - `Content-Type: application/json`
+  - `Authorization: Bearer {token}` (للمسارات المحمية)
+  - `X-Device-ID: {unique_id}` (يفضل إرساله لتتبع الأخطاء)
 
-- **Endpoint:** `GET /api/v1/teacher/init`
+---
+
+## 2. المصادقة (Authentication)
+
+### 🔑 تسجيل الدخول (Login)
+يدعم النظام ميزة "الجلسة الواحدة" (Single Session).
+
+- **Endpoint:** `POST /login`
+- **Payload:**
+```json
+{
+  "email": "teacher@example.com",
+  "password": "password",
+  "device_name": "iPhone 15 Pro",
+  "force": false 
+}
+```
+- **الملاحظات:**
+  - إذا كان المستخدم مسجلاً في جهاز آخر، سيعود الرد بـ `403`.
+  - اطلب من المستخدم "تبديل الجهاز" وأرسل `"force": true` لتسجيل خروجه من الأجهزة القديمة.
+
+---
+
+## 3. جلب البيانات الأولية (Initial Data Load)
+
+### 📦 حزمة البيانات الأساسية (Init)
+بدلاً من نداء مسارات متعددة، استخدم هذا المسار عند فتح التطبيق لجلب (البروفايل، المواد، والمحاضرات النشطة حالياً).
+
+- **Endpoint:** `GET /teacher/init`
 - **Response Example:**
 ```json
 {
   "success": true,
   "data": {
-    "profile": { "id": "uuid", "full_name": "اسم المدرس", "email": "email@test.com" },
-    "subjects": [ { "id": 1, "name": "رياضيات", "groups": [...] } ],
-    "active_lectures": [ { "id": "uuid", "title": "محاضرة 1", "status": "active" } ]
+    "profile": { "id": "uuid", "full_name": "أحمد علي", "email": "a@test.com" },
+    "subjects": [
+      {
+        "id": "subject-uuid",
+        "name": "البرمجة",
+        "groups": [
+          { "id": "group-uuid", "name": "المجموعة الأولى", "stage_name": "المرحلة الثالثة" }
+        ]
+      }
+    ],
+    "active_lectures": [
+      { "id": "lecture-uuid", "title": "محاضرة 1", "status": "active" }
+    ]
   }
 }
 ```
 
 ---
 
-## 2. مزامنة الطلاب (Incremental Students Sync)
-لجلب الطلاب وتخزينهم في قاعدة بيانات التطبيق المحلية.
+## 4. المزامنة والبيانات الضخمة (Data Sync)
 
-- **Endpoint:** `GET /api/v1/teacher/students?since_version=0`
-- **حقول الطالب الهامة:**
-    - `id`: المعرف الفريد (UUID).
-    - `first_name`: الاسم الأول.
-    - `second_name`: اسم الأب.
-    - `last_name`: اللقب/العشيرة.
-    - `full_name`: الاسم الكامل المدمج (للعرض فقط).
-    - `student_external_id`: الرقم التعريفي للطالب.
-    - `qr_hash`: الـ Hash الذي يتم مقارنته مع الكود الممسوح.
-    - `version`: رقم الإصدار للمزامنة التدريجية.
+### 👥 مزامنة الطلاب (Incremental Students)
+لجلب الطلاب وتحديث قاعدة بيانات التطبيق المحلية.
+
+- **Endpoint:** `GET /teacher/students?since_version=0`
+- **Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "students": [
+      {
+        "id": "uuid",
+        "first_name": "محمد",
+        "second_name": "جاسم",
+        "last_name": "الساعدي",
+        "full_name": "محمد جاسم الساعدي",
+        "student_external_id": "ST-12345",
+        "qr_hash": "sha256_hash_here",
+        "group_name": "م1",
+        "version": 1710500000 
+      }
+    ],
+    "deleted_ids": [],
+    "sync_version": 1710500000
+  }
+}
+```
+> **مهم:** احفظ رقم الـ `sync_version` وأرسله في الطلب القادم كـ `since_version` لجلب التحديثات الجديدة فقط.
 
 ---
 
-## 3. إرسال سجلات الحضور (Batch Attendance Sync)
-يتم إرسال كافة الطلاب الممسوحين "أوفلاين" إلى هذا المسار.
+## 5. عمليات الحضور (Attendance)
 
-- **Endpoint:** `POST /api/v1/attendance/sync`
-- **Payload Structure:**
+### 📡 إرسال الحضور (Batch Sync)
+يُستخدم لإرسال الطلاب الممسوحين "أوفلاين" كدفعة واحدة.
+
+- **Endpoint:** `POST /attendance/sync`
+- **Payload:**
 ```json
 {
-  "sync_id": "uuid-per-batch",
+  "sync_id": "unique-uuid",
   "lecture_id": "lecture-uuid",
-  "device_info": {
-    "id": "hardware-id",
-    "model": "iPhone 14",
-    "os_version": "17.1",
-    "app_version": "1.2.0"
-  },
+  "device_info": { "id": "uuid", "model": "S24 Ultra" },
   "sent_at": "2026-03-15T10:00:00Z",
   "scans": [
     {
@@ -64,10 +121,14 @@
 }
 ```
 
+### 👆 تسجيل يدوي (Toggle Manual)
+- **Endpoint:** `POST /teacher/lectures/{lecture_id}/toggle-attendance`
+- **Payload:** `{ "student_id": "uuid" }`
+
 ---
 
-## 4. ملاحظات هامة للمبرمج
-1. **Idempotency:** السيرفر يستخدم `request_id` لمنع تكرار تسجيل الطالب إذا أرسلت نفس البيانات مرتين.
-2. **Column Names:** تأكد من استخدام `first_name` و `last_name` عند عرض البيانات بدلاً من عمود `name` القديم.
-3. **Roles:** النظام يعتند على `Spatie Permission`. عند تسجيل الدخول، تأكد من تخزين التوكّن واستخدامه في جميع الطلبات اللاحقة.
-4. **403 Errors:** إذا واجهت خطأ 403 فور تسجيل الدخول، جرب تحديث الصفحة (Refresh) لضمان اكتمال تحميل الجلسة.
+## 6. ملاحظات تقنية للمبرمج (Critical Notes)
+1. **الأسماء:** قاعدة البيانات تفصل الاسم (`first_name`, `second_name`, `last_name`). لا تبحث عن حقل `name`.
+2. **Idempotency:** السيرفر يرفض تكرار نفس الـ `request_id` لنفس الطالب في نفس المحاضرة.
+3. **QR Matching:** السيرفر يرسل `qr_hash` (sha256). التطبيق يجب أن يقوم بعمل hash للكود الممسوح ومقارنته محلياً.
+4. **التوقيت:** استخدم دائماً صيغة ISO 8601 للتواريخ (`2026-03-15T14:00:00Z`).
