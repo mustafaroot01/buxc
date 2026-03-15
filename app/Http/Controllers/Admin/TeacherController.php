@@ -16,11 +16,13 @@ class TeacherController extends Controller
         $query = User::role('teacher')->newQuery();
 
         if ($request->filled('search')) {
-            $query->where('full_name', 'like', '%'.$request->search.'%')
-                ->orWhere('email', 'like', '%'.$request->search.'%');
+            $query->where(function($q) use ($request) {
+                $q->where('full_name', 'like', '%'.$request->search.'%')
+                  ->orWhere('email', 'like', '%'.$request->search.'%');
+            });
         }
 
-        $teachers = $query->paginate(15)->withQueryString();
+        $teachers = $query->latest()->paginate(15)->withQueryString();
 
         return Inertia::render('Admin/Teachers/Index', [
             'teachers' => $teachers,
@@ -125,9 +127,27 @@ class TeacherController extends Controller
 
     public function destroy(User $teacher)
     {
-        $teacher->delete();
+        // For store compliance, we'll deactivate by default instead of deleting data
+        $teacher->update(['is_active' => false]);
+        $teacher->tokens()->delete();
 
-        return redirect()->route('admin.teachers.index')->with('success', 'تم حذف الأستاذ بنجاح.');
+        return redirect()->route('admin.teachers.index')->with('success', 'تم تعطيل حساب الأستاذ بنجاح.');
+    }
+
+    /**
+     * Permanent delete if needed (Internal)
+     */
+    public function permanentDestroy(User $teacher)
+    {
+        $teacher->delete();
+        return redirect()->route('admin.teachers.index')->with('success', 'تم حذف الأستاذ نهائياً بنجاح.');
+    }
+
+    public function activate(User $teacher)
+    {
+        $teacher->update(['is_active' => true]);
+
+        return redirect()->route('admin.teachers.index')->with('success', 'تم إعادة تفعيل حساب الأستاذ بنجاح.');
     }
 
     public function revokeSessions(User $teacher)

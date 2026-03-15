@@ -22,6 +22,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('students', \App\Http\Controllers\Admin\StudentController::class);
 
         // Core Management Modules
+        Route::post('teachers/{teacher}/activate', [\App\Http\Controllers\Admin\TeacherController::class, 'activate'])->name('teachers.activate');
+        Route::delete('teachers/{teacher}/permanent', [\App\Http\Controllers\Admin\TeacherController::class, 'permanentDestroy'])->name('teachers.permanent-destroy');
         Route::resource('teachers', \App\Http\Controllers\Admin\TeacherController::class);
         Route::post('teachers/{teacher}/revoke-sessions', [\App\Http\Controllers\Admin\TeacherController::class, 'revokeSessions'])->name('teachers.revoke-sessions');
         Route::resource('stages', \App\Http\Controllers\Admin\AcademicStageController::class);
