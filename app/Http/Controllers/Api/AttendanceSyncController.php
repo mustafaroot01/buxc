@@ -194,9 +194,21 @@ class AttendanceSyncController extends Controller
             ], 'تمت عملية المزامنة بنجاح.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("Attendance Sync Failed: " . $e->getMessage());
 
-            return $this->error('حدث خطأ أثناء المزامنة: ' . $e->getMessage(), 500);
+            // Sanitize the exception message for logging
+            $message = $e->getMessage();
+            if (!mb_check_encoding($message, 'UTF-8')) {
+                $message = mb_convert_encoding($message, 'UTF-8', 'UTF-8');
+            }
+
+            Log::error("Attendance Sync Failed: " . $message, [
+                'exception' => get_class($e),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => substr($e->getTraceAsString(), 0, 1000), // Limit trace size
+            ]);
+
+            return $this->error('حدث خطأ أثناء المزامنة: ' . $message, 500);
         }
     }
 }
