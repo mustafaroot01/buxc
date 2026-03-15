@@ -38,6 +38,7 @@ Route::prefix('v1')->group(function () {
             // Profile
             Route::get('/profile', [\App\Http\Controllers\Api\Teacher\ProfileController::class, 'show']);
             Route::post('/profile', [\App\Http\Controllers\Api\Teacher\ProfileController::class, 'update']);
+            Route::post('/deactivate', [\App\Http\Controllers\Api\Teacher\ProfileController::class, 'deactivate'])->name('api.teacher.deactivate');
 
             // Sync Students
             Route::get('/students', [\App\Http\Controllers\Api\Teacher\StudentSyncController::class, 'index']);

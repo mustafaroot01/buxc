@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\Auth;
 
 class ProfileController extends Controller
 {
@@ -58,6 +59,24 @@ class ProfileController extends Controller
             'message' => 'Profile updated successfully.',
             'user' => $user->fresh(),
             'photo_url' => $user->photo_path ? asset('storage/' . $user->photo_path) : null,
+        ]);
+    }
+
+    /**
+     * Deactivate the teacher's account.
+     */
+    public function deactivate(Request $request)
+    {
+        $user = $request->user();
+
+        // Mark as inactive
+        $user->update(['is_active' => false]);
+
+        // Revoke all tokens
+        $user->tokens()->delete();
+
+        return response()->json([
+            'message' => 'Account deactivated successfully.',
         ]);
     }
 }

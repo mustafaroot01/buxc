@@ -39,6 +39,7 @@ class User extends Authenticatable
         'degree',
         'phone_number',
         'gender',
+        'is_active',
     ];
 
 

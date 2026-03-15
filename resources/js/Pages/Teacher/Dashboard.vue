@@ -4,9 +4,11 @@ import { Head, Link } from '@inertiajs/vue3';
 import { 
     BookOpenIcon, UsersIcon, CheckCircle2Icon, CalendarDaysIcon,
     QrCodeIcon, PlayIcon, ClockIcon, GraduationCapIcon, ChevronRightIcon,
-    SunIcon, AlertTriangleIcon, SearchIcon, ArrowLeftIcon
+    SunIcon, AlertTriangleIcon, SearchIcon, ArrowLeftIcon, UserXIcon,
+    ShieldAlertIcon, Loader2Icon
 } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+import axios from 'axios';
 
 const props = defineProps<{
     stats: {
@@ -53,6 +55,27 @@ const todayDate = computed(() => {
 
 const formatTime = (datetime: string) => {
     return new Date(datetime).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+};
+
+// Account Deactivation Logic
+const showDeleteModal = ref(false);
+const isDeactivating = ref(false);
+const deactivationError = ref<string | null>(null);
+
+const confirmDeactivate = async () => {
+    isDeactivating.value = true;
+    deactivationError.value = null;
+    
+    try {
+        await axios.post(route('api.teacher.deactivate'));
+        // Redirect to login or show success then logout
+        window.location.href = '/login';
+    } catch (error: any) {
+        console.error('Failed to deactivate account:', error);
+        deactivationError.value = error.response?.data?.message || 'فشل في تعطيل الحساب. يرجى المحاولة لاحقاً.';
+    } finally {
+        isDeactivating.value = false;
+    }
 };
 </script>
 
@@ -319,6 +342,61 @@ const formatTime = (datetime: string) => {
                     </Link>
                 </div>
 
+                <!-- Account Management Section (Fake Delete) -->
+                <div class="pt-6 border-t border-gray-100 mt-8">
+                    <div class="bg-red-50/50 rounded-2xl p-6 border border-red-100 flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center text-red-600">
+                                <ShieldAlertIcon class="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-900">إدارة الحساب</h3>
+                                <p class="text-xs text-gray-500 mt-1">يمكنك طلب حذف حسابك نهائياً من النظام. سيتم تعطيل وصولك فوراً.</p>
+                            </div>
+                        </div>
+                        <button @click="showDeleteModal = true" 
+                           class="inline-flex items-center gap-2 px-6 py-3 bg-white border border-red-200 text-red-600 hover:bg-red-50 text-sm font-bold rounded-xl transition-all shadow-sm active:scale-95">
+                            <UserXIcon class="w-4 h-4" />
+                            حذف الحساب
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Delete Account Confirmation Modal -->
+        <div v-if="showDeleteModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300">
+                <div class="p-6 text-center">
+                    <div class="w-20 h-20 rounded-2xl bg-red-50 flex items-center justify-center text-red-600 mx-auto mb-6">
+                        <ShieldAlertIcon class="w-10 h-10" />
+                    </div>
+                    <h3 class="text-xl font-black text-gray-900 mb-2">هل أنت متأكد من حذف الحساب؟</h3>
+                    <p class="text-sm text-gray-500 leading-relaxed mb-6 px-4">
+                        عند تأكيد حذف الحساب، سيتم تسجيل خروجك وتعطيل حسابك فوراً. لن تتمكن من الوصول إلى محاضراتك أو بياناتك مرة أخرى.
+                    </p>
+
+                    <div v-if="deactivationError" class="mb-6 p-3 bg-red-50 text-red-700 text-xs font-bold rounded-xl border border-red-100">
+                        {{ deactivationError }}
+                    </div>
+
+                    <div class="flex flex-col gap-3">
+                        <button 
+                            @click="confirmDeactivate" 
+                            :disabled="isDeactivating"
+                            class="w-full py-4 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-black rounded-2xl transition-all shadow-lg shadow-red-500/30 flex items-center justify-center gap-2">
+                            <Loader2Icon v-if="isDeactivating" class="w-5 h-5 animate-spin" />
+                            <span v-else>نعم، تأكيد الحذف</span>
+                        </button>
+                        <button 
+                            @click="showDeleteModal = false" 
+                            :disabled="isDeactivating"
+                            class="w-full py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-2xl transition-all">
+                            تراجع
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </AuthenticatedLayout>
