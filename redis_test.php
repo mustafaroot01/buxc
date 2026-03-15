@@ -2,7 +2,7 @@
 // Redis Verbose Test Script
 $host = '127.0.0.1';
 $port = 6379;
-$pass = 'Buxc2026Redis'; // الكلمة التي حاولنا استخدامها
+$pass = 'buxc123'; // الكلمة الجديدة السهلة
 
 echo "--- Redis Diagnostic ---\n";
 echo "Connecting to $host:$port...\n";
