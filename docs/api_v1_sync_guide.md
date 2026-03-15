@@ -1,119 +1,73 @@
-# دليل تكامل API المزامنة (v1) - نظام الحضور والغياب
+# دليل تكامل API المزامنة (v1) - تحديث مارس 2026
 
-هذا المستند مخصص لمطور تطبيق الموبايل لربط النظام الجديد للمزامنة الأوفلاين (Offline Sync) وإدارة الجلسات.
-
----
-
-## 1. تسجيل الدخول وإدارة الجلسة
-يسمح النظام الآن بجلسة واحدة فقط لكل حساب لضمان دقة مزامنة البيانات.
-
-- **Endpoint:** `POST /api/v1/login`
-- **Payload:**
-```json
-{
-  "email": "teacher@example.com",
-  "password": "password123",
-  "device_name": "iPhone 15 Pro",
-  "force": false 
-}
-```
-- **الملاحظات:**
-    - إذا كان الحساب مسجلاً في جهاز آخر، سيعود الرد بـ `403 Forbidden`.
-    - عند إرسال `"force": true` سيتم تسجيل الخروج من كافة الأجهزة الأخرى ومنحك توكّن جديد.
+هذا الدليل مخصص لمطوري التطبيقات لربط نظام الحضور والغياب مع السيرفر، مع دعم كامل للمزامنة الأوفلاين (Offline Sync).
 
 ---
 
-## 2. المزامنة التدريجية للطلاب (Incremental Students Sync)
-جلب الطلاب المضافين أو المعدلين أو المحذوفين فقط. يبدأ التطبيق بـ `since_version = 0` لأول مرة.
+## 1. المدخل الرئيسي للبيانات (Aggregate Init)
+بدلاً من طلب كل قائمة على حدة عند فتح التطبيق، استخدم هذا المسار لجلب (البروفايل + المواد + المحاضرات النشطة اليوم) في طلب واحد.
 
-- **Endpoint:** `GET /api/v1/teacher/students?since_version=50`
-- **Headers:** `Authorization: Bearer {token}`
-- **Response:**
+- **Endpoint:** `GET /api/v1/teacher/init`
+- **Response Example:**
 ```json
 {
   "success": true,
   "data": {
-    "students": [
-      {
-        "id": "uuid-1",
-        "full_name": "احمد علي",
-        "qr_hash": "sha256-hash-of-payload",
-        "group_name": "المجموعة A",
-        "version": 55
-      }
-    ],
-    "deleted_ids": ["uuid-old-99"],
-    "sync_version": 55,
-    "server_time": "2024-03-15T01:40:00Z"
-  }
-}
-```
-- **المطلوب:** يجب على التطبيق تخزين `sync_version` الأخير واستخدامه في الطلب القادم كـ `since_version`.
-
----
-
-## 3. المزامنة التدريجية للمحاضرات (Incremental Lectures Sync)
-تحديث قائمة المحاضرات الخاصة بالمدرس.
-
-- **Endpoint:** `GET /api/v1/teacher/lectures/sync?since_version=10`
-- **Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "lectures": [
-      {
-        "id": "uuid-lecture-1",
-        "title": "محاضرة الرياضيات",
-        "status": "active",
-        "version": 12
-      }
-    ],
-    "deleted_ids": [],
-    "sync_version": 12
+    "profile": { "id": "uuid", "full_name": "اسم المدرس", "email": "email@test.com" },
+    "subjects": [ { "id": 1, "name": "رياضيات", "groups": [...] } ],
+    "active_lectures": [ { "id": "uuid", "title": "محاضرة 1", "status": "active" } ]
   }
 }
 ```
 
 ---
 
-## 4. إرسال الحضور دفعة واحدة (Batch Attendance Sync)
-إرسال كافة السجلات المخزنة أوفلاين إلى السيرفر.
+## 2. مزامنة الطلاب (Incremental Students Sync)
+لجلب الطلاب وتخزينهم في قاعدة بيانات التطبيق المحلية.
+
+- **Endpoint:** `GET /api/v1/teacher/students?since_version=0`
+- **حقول الطالب الهامة:**
+    - `id`: المعرف الفريد (UUID).
+    - `first_name`: الاسم الأول.
+    - `second_name`: اسم الأب.
+    - `last_name`: اللقب/العشيرة.
+    - `full_name`: الاسم الكامل المدمج (للعرض فقط).
+    - `student_external_id`: الرقم التعريفي للطالب.
+    - `qr_hash`: الـ Hash الذي يتم مقارنته مع الكود الممسوح.
+    - `version`: رقم الإصدار للمزامنة التدريجية.
+
+---
+
+## 3. إرسال سجلات الحضور (Batch Attendance Sync)
+يتم إرسال كافة الطلاب الممسوحين "أوفلاين" إلى هذا المسار.
 
 - **Endpoint:** `POST /api/v1/attendance/sync`
-- **Payload:**
+- **Payload Structure:**
 ```json
 {
-  "sync_id": "unique-uuid-per-batch",
+  "sync_id": "uuid-per-batch",
   "lecture_id": "lecture-uuid",
   "device_info": {
-    "id": "device-unique-hardware-id",
-    "model": "Samsung S24 Ultra",
-    "os_version": "Android 14",
-    "app_version": "1.1.0"
+    "id": "hardware-id",
+    "model": "iPhone 14",
+    "os_version": "17.1",
+    "app_version": "1.2.0"
   },
-  "sent_at": "2024-03-15T10:45:00Z",
+  "sent_at": "2026-03-15T10:00:00Z",
   "scans": [
     {
-      "student_id": "student-uuid-1",
-      "scanned_at": "2024-03-15T09:30:15Z",
-      "request_id": "uuid-unique-per-single-scan"
-    },
-    {
-      "student_id": "student-uuid-2",
-      "scanned_at": "2024-03-15T09:35:10Z",
-      "request_id": "uuid-unique-per-single-scan-2"
+      "student_id": "student-uuid",
+      "scanned_at": "2026-03-15T09:30:00Z",
+      "request_id": "unique-scan-uuid"
     }
   ]
 }
 ```
-- **القواعد السلوكية:**
-    - يجب توليد `request_id` فريد لكل عملية مسح (Scan) لحماية البيانات من التكرار في حال إعادة الإرسال.
-    - السيرفر يعالج البيانات في الخلفية باستخدام Redis لتصفير الغيابات فوراً.
 
 ---
 
-## 5. ملاحظات تقنية عامة
-- تفعيل الـ `X-Device-ID` في الـ Headers يساعد النظام على تتبع الأخطاء بدقة أكبر.
-- جميع الاستجابات تعود بصيغة JSON موحدة.
-- أي فشل في الـ API سيتم تسجيله تلقائياً في السيرفر للمراجعة في "مركز أخطاء API".
+## 4. ملاحظات هامة للمبرمج
+1. **Idempotency:** السيرفر يستخدم `request_id` لمنع تكرار تسجيل الطالب إذا أرسلت نفس البيانات مرتين.
+2. **Column Names:** تأكد من استخدام `first_name` و `last_name` عند عرض البيانات بدلاً من عمود `name` القديم.
+3. **Roles:** النظام يعتند على `Spatie Permission`. عند تسجيل الدخول، تأكد من تخزين التوكّن واستخدامه في جميع الطلبات اللاحقة.
+4. **403 Errors:** إذا واجهت خطأ 403 فور تسجيل الدخول، جرب تحديث الصفحة (Refresh) لضمان اكتمال تحميل الجلسة.
