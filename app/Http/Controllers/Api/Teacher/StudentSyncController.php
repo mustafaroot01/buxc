@@ -17,6 +17,11 @@ class StudentSyncController extends Controller
     {
         $teacher = $request->user();
         $sinceVersion = $request->query('since_version', 0);
+        $all = $request->boolean('all', false);
+        $perPage = (int) $request->query('per_page', 1000);
+        
+        // Safety cap for per_page
+        if ($perPage > 5000) $perPage = 5000;
 
         // 1. Get all group IDs that the teacher teaches (through subjects)
         $groupIds = $teacher->subjects()
@@ -29,16 +34,18 @@ class StudentSyncController extends Controller
             ->values()
             ->toArray();
 
-        // 2. Query students in those groups that have changed since the provided version
-        // Include soft deleted students to notify the app about deletions
-        $students = Student::withTrashed()
+        // 2. Query students in those groups
+        $query = Student::withTrashed()
             ->with(['group.stage'])
-            ->whereIn('group_id', $groupIds)
-            ->where(function ($query) use ($sinceVersion) {
-                $query->where('version', '>', $sinceVersion);
-            })
-            ->orderBy('version', 'asc')
-            ->limit(1000)
+            ->whereIn('group_id', $groupIds);
+
+        // If 'all' is not set, only get students changed since since_version
+        if (!$all) {
+            $query->where('version', '>', $sinceVersion);
+        }
+
+        $students = $query->orderBy('version', 'asc')
+            ->limit($perPage)
             ->get();
 
         // 3. Separate into active and deleted
@@ -47,7 +54,7 @@ class StudentSyncController extends Controller
                 'id' => $student->id,
                 'full_name' => $student->full_name,
                 'student_external_id' => $student->student_external_id,
-                'qr_hash' => hash('sha256', $student->qr_payload), // App matches against hash
+                'qr_hash' => hash('sha256', (string)$student->qr_payload), // App matches against hash
                 'group_name' => $student->group->name ?? 'N/A',
                 'stage_name' => $student->group->stage->name ?? 'N/A',
                 'study_type' => $student->group->study_type ?? 'N/A',
@@ -65,6 +72,7 @@ class StudentSyncController extends Controller
             'deleted_ids' => $deletedIds,
             'sync_version' => $newSyncVersion,
             'server_time' => Carbon::now()->toIso8601String(),
+            'total_count' => $students->count(),
         ], 'قائمة الطلاب المحدثة تم جلبها بنجاح.');
     }
 }
