@@ -14,6 +14,9 @@ class AttendanceSyncLog extends Model
     protected $fillable = [
         'sync_id',
         'device_id',
+        'device_model',
+        'os_version',
+        'app_version',
         'lecture_id',
         'scans_received',
         'scans_processed',
@@ -22,10 +25,17 @@ class AttendanceSyncLog extends Model
         'synced_at',
         'duration_ms',
         'status',
+        'error_details',
     ];
 
     protected $casts = [
         'sent_at' => 'datetime',
         'synced_at' => 'datetime',
+        'error_details' => 'array',
     ];
+
+    public function lecture()
+    {
+        return $this->belongsTo(Lecture::class);
+    }
 }
