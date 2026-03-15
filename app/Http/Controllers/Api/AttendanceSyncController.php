@@ -68,7 +68,7 @@ class AttendanceSyncController extends Controller
 
             // Pre-fetch Students
             $studentsMap = Student::whereIn('id', $studentIds, 'and', false)
-                ->select(['id', 'name', 'group_id'])
+                ->select(['id', 'first_name', 'second_name', 'last_name', 'group_id'])
                 ->get()
                 ->keyBy('id');
 

@@ -109,11 +109,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Fallback Dashboard Route for generic redirection
     Route::get('/dashboard', function () {
-        if (auth()->user()->hasRole('admin') || auth()->user()->hasRole('super_admin')) {
+        $user = auth()->user();
+        
+        if ($user->hasAnyRole(['admin', 'super_admin'])) {
             return redirect()->route('admin.dashboard');
         }
 
-        return redirect()->route('teacher.dashboard');
+        if ($user->hasRole('teacher')) {
+            return redirect()->route('teacher.dashboard');
+        }
+
+        // Final fallback if no roles matched yet (prevents 403 on first hit if session lag occurs)
+        return Inertia::render('Dashboard', [
+            'status' => 'جاري توجيهك إلى لوحة التحكم...',
+        ]);
     })->name('dashboard');
 
 });
