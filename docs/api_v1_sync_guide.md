@@ -119,11 +119,30 @@
   "sent_at": "2024-03-15T10:00:00Z",
   "scans": [
     {
-      "student_id": "student-uuid",
+      "student_id": "student-uuid-OR-offline_id",
       "scanned_at": "2026-03-15T09:30:00Z",
       "request_id": "unique-scan-uuid"
     }
   ]
+}
+```
+> **ملاحظة للمطور:** الـ `lecture_id` والـ `student_id` في هذا المسار يقبلان الآن المعرف الحقيقي (UUID) **أو** المعرف المؤقت الذي يبدأ بـ `offline_`. السيرفر سيقوم بمطابقتهم تلقائياً.
+
+---
+
+## 6. إدارة المحاضرات (Lecture Management)
+
+### ➕ إنشاء محاضرة (Create Lecture)
+عند إنشاء محاضرة وأنت "أوفلاين"، قم بإرسال المعرف المؤقت في حقل `offline_id`.
+
+- **Endpoint:** `POST /teacher/lectures`
+- **Payload:**
+```json
+{
+  "title": "اسم المحاضرة",
+  "subject_id": "uuid",
+  "group_id": "uuid",
+  "offline_id": "offline_unique_temp_id"
 }
 ```
 
