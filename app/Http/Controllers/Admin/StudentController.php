@@ -130,7 +130,7 @@ class StudentController extends Controller
 
     public function show(Student $student, Request $request)
     {
-        $student->load([
+        $student->makeVisible('qr_payload')->load([
             'group.stage',
             'warnings'
         ]);

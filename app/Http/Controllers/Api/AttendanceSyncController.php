@@ -24,21 +24,29 @@ class AttendanceSyncController extends Controller
         
         $validated = $request->validate([
             'sync_id' => 'required|string|unique:attendance_sync_logs,sync_id',
-            'lecture_id' => 'required|exists:lectures,id',
+            'lecture_id' => 'required|string', // Relaxed validation to allow offline_ IDs
             'device_info' => 'required|array',
             'device_info.id' => 'required|string',
             'device_info.model' => 'nullable|string',
             'device_info.os_version' => 'nullable|string',
             'device_info.app_version' => 'nullable|string',
             'sent_at' => 'required|date',
-            'action_type' => 'nullable|string|in:scan,manual', // Optional, defaults to scan if not provided
+            'action_type' => 'nullable|string|in:scan,manual', 
             'scans' => 'required|array',
-            'scans.*.student_id' => 'required|exists:students,id',
+            'scans.*.student_id' => 'required|string', // Relaxed validation
             'scans.*.scanned_at' => 'required|date',
-            'scans.*.request_id' => 'required|string', // Unique per scan for idempotency
+            'scans.*.request_id' => 'required|string', 
         ]);
 
-        $lecture = Lecture::findOrFail($request->lecture_id);
+        // Resolve Lecture: Try ID first, then offline_id
+        $lecture = Lecture::where('id', $request->lecture_id)
+            ->orWhere('offline_id', $request->lecture_id)
+            ->first();
+
+        if (!$lecture) {
+            return $this->error('المحاضرة غير موجودة، يرجى التأكد من مزامنة المحاضرات أولاً.', 404);
+        }
+
         $scansCount = count($request->scans);
         $processedCount = 0;
         $failedCount = 0;
@@ -67,23 +75,33 @@ class AttendanceSyncController extends Controller
                 return pack('H*', str_replace('-', '', $scan['request_id']));
             }, $scans);
 
-            // Pre-fetch Students
-            $studentsMap = Student::whereIn('id', $studentIds, 'and', false)
-                ->select(['id', 'first_name', 'second_name', 'last_name', 'group_id'])
-                ->get()
-                ->keyBy('id');
+            // Pre-fetch Students (Search by UUID or offline_id)
+            $studentsMap = Student::where(function($q) use ($studentIds) {
+                    $q->whereIn('id', $studentIds)
+                      ->orWhereIn('offline_id', $studentIds);
+                })
+                ->select(['id', 'offline_id', 'first_name', 'second_name', 'last_name', 'group_id'])
+                ->get();
+            
+            // Build a map that handles both true IDs and offline IDs
+            $studentsLookup = [];
+            foreach ($studentsMap as $s) {
+                $studentsLookup[$s->id] = $s;
+                if ($s->offline_id) {
+                    $studentsLookup[$s->offline_id] = $s;
+                }
+            }
 
-            // Pre-fetch existing Attendances for this lecture/students (to handle updates/restores)
+            // Pre-fetch existing Attendances for this lecture/students
+            $resolvedStudentIds = $studentsMap->pluck('id')->toArray();
             $existingAttendancesMap = Attendance::withTrashed()
-                ->where(function ($q) use ($lecture, $studentIds) {
-                    $q->where('lecture_id', '=', $lecture->id, 'and')
-                        ->whereIn('student_id', $studentIds, 'and', false);
-                }, null, null, 'and')
+                ->where('lecture_id', $lecture->id)
+                ->whereIn('student_id', $resolvedStudentIds)
                 ->get()
                 ->keyBy('student_id');
 
             // Pre-fetch global request_ids (idempotency check)
-            $globalRequestIdsSet = array_flip(array_map('bin2hex', Attendance::whereIn('request_id', $requestIds, 'and', false)
+            $globalRequestIdsSet = array_flip(array_map('bin2hex', Attendance::whereIn('request_id', $requestIds)
                 ->pluck('request_id', 'id')
                 ->toArray()));
 
@@ -101,7 +119,7 @@ class AttendanceSyncController extends Controller
                     continue;
                 }
 
-                $student = $studentsMap->get($scanData['student_id']);
+                $student = $studentsLookup[$scanData['student_id']] ?? null;
                 if (!$student) {
                     $failedCount++;
                     $errorDetails[] = [

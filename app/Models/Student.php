@@ -55,6 +55,7 @@ class Student extends Model
         'group_id',
         'qr_payload',
         'consecutive_absences',
+        'offline_id',
     ];
 
     protected $hidden = [

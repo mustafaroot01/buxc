@@ -88,6 +88,7 @@ class LectureController extends Controller
             'group_id' => $validated['group_id'],
             'start_time' => $start_time,
             'status' => 'active',
+            'offline_id' => $request->offline_id, // Capture offline_id if provided
         ]);
 
         return $this->success(
@@ -102,7 +103,11 @@ class LectureController extends Controller
      */
     public function show($id)
     {
-        $lecture = Lecture::with(['subject', 'group.stage'])->findOrFail($id);
+        // Try resolving by UUID first, then by offline_id
+        $lecture = Lecture::with(['subject', 'group.stage'])
+            ->where('id', $id)
+            ->orWhere('offline_id', $id)
+            ->firstOrFail();
 
         if ($lecture->teacher_id !== Auth::id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
@@ -146,7 +151,10 @@ class LectureController extends Controller
      */
     public function toggleAttendance(Request $request, $lectureId)
     {
-        $lecture = Lecture::findOrFail($lectureId);
+        // Resolve lecture by UUID or offline_id
+        $lecture = Lecture::where('id', $lectureId)
+            ->orWhere('offline_id', $lectureId)
+            ->firstOrFail();
 
         if ($lecture->teacher_id !== Auth::id()) {
             return response()->json(['error' => 'Unauthorized'], 403);

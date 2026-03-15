@@ -65,7 +65,8 @@ class Lecture extends Model
         'group_id',
         'start_time',
         'end_time',
-        'status'
+        'status',
+        'offline_id'
     ];
 
     protected $casts = [
