@@ -213,14 +213,6 @@ class LectureController extends Controller
             return response()->json(['success' => false, 'message' => 'غير مصرح لك.'], 403);
         }
 
-        // --- Fix: 24-Hour Edit Lock Check (Allow only if it has not been more than 24 hours since start time) ---
-        if ($lecture->start_time->addHours(24)->isPast()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'عذراً، لا يمكن تعديل الحضور بعد مرور 24 ساعة على موعد بدء المحاضرة.',
-            ], 403);
-        }
-
         $request->validate([
             'student_id' => 'required|exists:students,id',
         ]);

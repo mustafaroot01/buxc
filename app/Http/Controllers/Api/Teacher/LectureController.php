@@ -152,10 +152,7 @@ class LectureController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        // --- Fix: 24-Hour Edit Lock Check (Allow only if it has not been more than 24 hours since start time) ---
-        if ($lecture->start_time->addHours(24)->isPast()) {
-            return $this->error('لا يمكن تعديل المحاضرة بعد مرور 24 ساعة على بدايتها.', 403);
-        }
+
 
         $request->validate(['student_id' => 'required|exists:students,id']);
         $studentId = $request->student_id;

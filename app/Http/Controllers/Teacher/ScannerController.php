@@ -77,14 +77,6 @@ class ScannerController extends Controller
             return response()->json(['success' => false, 'message' => 'هذه المحاضرة مغلقة ولا يمكن تسجيل الحضور فيها.'], 400);
         }
 
-        // --- Fix: 24-Hour Edit Lock Check (Allow only if it has not been more than 24 hours since start time) ---
-        if ($lecture->start_time->addHours(24)->isPast()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'عذراً، لا يمكن تسجيل الحضور بعد مرور 24 ساعة على المحاضرة.',
-            ], 403);
-        }
-
         // Look up student directly by their unique qr_payload token
         $student = \App\Models\Student::where('qr_payload', $request->qr_payload)->first();
 
