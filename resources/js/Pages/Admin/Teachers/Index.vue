@@ -60,6 +60,10 @@ const confirmDeleteTeacher = () => {
 const activateTeacher = (teacher: any) => {
     router.post(route('admin.teachers.activate', teacher.id));
 };
+
+const restoreTeacher = (teacher: any) => {
+    router.post(route('admin.teachers.restore', teacher.id));
+};
 </script>
 
 <template>
@@ -132,7 +136,11 @@ const activateTeacher = (teacher: any) => {
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ teacher.email }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span v-if="teacher.is_active" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                        <span v-if="teacher.deleted_at" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200">
+                                            <Trash2Icon class="w-3 h-3 ml-1" />
+                                            محذوف (قديم)
+                                        </span>
+                                        <span v-else-if="teacher.is_active" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
                                             <CheckCircleIcon class="w-3 h-3 ml-1" />
                                             نشط
                                         </span>
@@ -146,7 +154,10 @@ const activateTeacher = (teacher: any) => {
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
                                         <div class="flex items-center justify-end gap-2">
-                                            <button v-if="!teacher.is_active" @click="activateTeacher(teacher)" class="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors" title="إعادة تفعيل">
+                                            <button v-if="teacher.deleted_at" @click="restoreTeacher(teacher)" class="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors" title="استعادة المحذوف">
+                                                <RefreshCcwIcon class="w-4 h-4" />
+                                            </button>
+                                            <button v-else-if="!teacher.is_active" @click="activateTeacher(teacher)" class="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors" title="إعادة تفعيل">
                                                 <UserCheckIcon class="w-4 h-4" />
                                             </button>
                                             <button @click="revokeSessions(teacher)" class="p-2 text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors" title="إلغاء ارتباط الأجهزة (Revoke Sessions)">

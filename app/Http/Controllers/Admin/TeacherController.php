@@ -13,7 +13,7 @@ class TeacherController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::role('teacher')->newQuery();
+        $query = User::role('teacher')->withTrashed()->newQuery();
 
         if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
@@ -148,6 +148,15 @@ class TeacherController extends Controller
         $teacher->update(['is_active' => true]);
 
         return redirect()->route('admin.teachers.index')->with('success', 'تم إعادة تفعيل حساب الأستاذ بنجاح.');
+    }
+
+    public function restore($id)
+    {
+        $teacher = User::withTrashed()->findOrFail($id);
+        $teacher->restore();
+        $teacher->update(['is_active' => true]);
+
+        return redirect()->route('admin.teachers.index')->with('success', 'تم استعادة حساب الأستاذ بنجاح.');
     }
 
     public function revokeSessions(User $teacher)
