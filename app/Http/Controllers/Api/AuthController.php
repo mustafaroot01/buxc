@@ -28,6 +28,10 @@ class AuthController extends Controller
             return $this->error('بيانات الدخول غير صحيحة. يرجى التأكد من البريد الإلكتروني وكلمة المرور.', 401);
         }
 
+        if (! $user->is_active) {
+            return $this->error('الحساب مجدول للحذف تواصل مع رئاسة القسم', 403);
+        }
+
         // Check for existing active tokens (to prevent multi-device sync conflicts)
         $activeTokensCount = $user->tokens()->count();
         if ($activeTokensCount > 0 && ! $request->boolean('force')) {

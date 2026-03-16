@@ -22,7 +22,7 @@ class CheckUserStatus
             }
 
             return response()->json([
-                'message' => 'هذا الحساب معطل. يرجى التواصل مع الإدارة.',
+                'message' => 'الحساب مجدول للحذف تواصل مع رئاسة القسم',
                 'error' => 'account_inactive'
             ], 403);
         }
