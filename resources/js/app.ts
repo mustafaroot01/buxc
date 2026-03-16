@@ -39,8 +39,35 @@ if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js').then(registration => {
             console.log('SW registered: ', registration);
+            
+            // Handle updates
+            registration.onupdatefound = () => {
+                const installingWorker = registration.installing;
+                if (installingWorker) {
+                    installingWorker.onstatechange = () => {
+                        if (installingWorker.state === 'installed') {
+                            if (navigator.serviceWorker.controller) {
+                                // New content is available, but the old worker is still in control
+                                console.log('New content is available; please refresh.');
+                            } else {
+                                // Content is cached for offline use
+                                console.log('Content is cached for offline use.');
+                            }
+                        }
+                    };
+                }
+            };
         }).catch(registrationError => {
             console.log('SW registration failed: ', registrationError);
         });
+    });
+
+    // Reload the page when the service worker changes (e.g., skipWaiting was called)
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+            window.location.reload();
+            refreshing = true;
+        }
     });
 }
