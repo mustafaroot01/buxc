@@ -31,10 +31,6 @@ defineProps<{
             <div class="max-w-4xl w-full text-center space-y-12">
                 <!-- Main Header -->
                 <div class="space-y-6">
-                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-200 bg-emerald-50 mb-2">
-                        <SparklesIcon class="w-4 h-4 text-emerald-600" />
-                        <span class="text-xs font-bold text-emerald-700 tracking-wide">النظام الذكي المتكامل</span>
-                    </div>
                     <h1 class="text-4xl lg:text-6xl font-black text-slate-900 leading-[1.2] tracking-tight">
                         نظام إدارة الحضور والغياب 
                         <span class="block text-transparent bg-clip-text bg-gradient-to-l from-emerald-600 to-teal-600">
@@ -69,18 +65,12 @@ defineProps<{
                     </Link>
                     
                     <!-- Modern Tech Badges -->
-                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-x-12 gap-y-6 text-slate-400 font-bold text-xs">
-                        <div class="flex items-center gap-3 hover:text-emerald-600 transition-colors cursor-default group">
-                             <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
-                                <CpuIcon class="w-4 h-4 text-emerald-600" />
-                             </div>
-                             <span>تقييم ذكي</span>
-                        </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-6 text-slate-400 font-bold text-xs">
                         <div class="flex items-center gap-3 hover:text-emerald-600 transition-colors cursor-default group">
                              <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
                                 <SmartphoneIcon class="w-4 h-4 text-emerald-600" />
                              </div>
-                             <span>تطبيق الموبايل</span>
+                             <span>تكامل الموبايل</span>
                         </div>
                         <div class="flex items-center gap-3 hover:text-emerald-600 transition-colors cursor-default group">
                              <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
