@@ -30,38 +30,48 @@ defineProps<{
 
             <div class="max-w-4xl w-full text-center space-y-12">
                 <!-- Main Header -->
-                <div class="space-y-6">
-                    <h1 class="text-4xl lg:text-6xl font-black text-slate-900 leading-[1.2] tracking-tight">
+                <div class="space-y-4">
+                    <h1 class="text-4xl lg:text-7xl font-black text-slate-900 leading-[1.1] tracking-tight">
                         نظام إدارة الحضور والغياب 
-                        <span class="block text-transparent bg-clip-text bg-gradient-to-l from-emerald-600 to-teal-600">
-                            بتقنيات الـ QR الذكية
-                        </span>
+                        <span class="block text-emerald-600 mt-2">بتقنيات الـ QR الذكية</span>
                     </h1>
-                    <p class="text-lg text-emerald-700 font-bold tracking-widest uppercase">جامعة بلاد الرافدين - كلية التقنيات الهندسية</p>
+                    <div class="h-1.5 w-32 bg-gradient-to-l from-emerald-500 to-teal-500 mx-auto rounded-full"></div>
+                    <p class="text-xl text-slate-500 font-bold tracking-widest">
+                        جامعة بلاد الرافدين — كلية التقنيات الهندسية
+                    </p>
                 </div>
 
                 <!-- Features Narrative -->
-                <div class="relative group">
-                    <div class="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-3xl blur-sm opacity-5"></div>
-                    <div class="relative bg-white/80 backdrop-blur-xl border border-white rounded-[2.5rem] p-8 lg:p-14 shadow-2xl shadow-gray-200/50 text-right leading-[1.9] lg:leading-[2.4]">
-                        <p class="text-lg lg:text-2xl text-slate-700 font-medium text-justify">
-                            نظام تسجيل الحضور والغياب الذكي هو منصة أكاديمية متكاملة صممت خصيصاً لتلبية احتياجات كلية التقنيات الهندسية في جامعة بلاد الرافدين حيث يوفر حلولاً تقنية متقدمة لضبط العملية التدريسية من خلال تقديم تجربة رقمية فرصة تعتمد على تقنيات الـ QR الديناميكي التي تمنع التلاعب وتضمن دقة البيانات المسجلة وهو ما يتيح للأساتذة إدارة محاضراتهم بمرونة عالية تشمل فتح المحاضرة بضغطة زر واحدة ومتابعة الحضور الآني للطلاب ومراجعة السجلات التاريخية بدقة متناهية كما يضم النظام لوحة تحكم إدارية شاملة تمنح رئاسة القسم صلاحيات واسعة لإدارة بيانات المدرسين والطلبة والمواد الدراسية بفعالية قصوى مع نظام إنذرات ذكي يقوم بتحليل غيابات الطلاب تلقائياً وتنبيههم قبل وصولهم لمرحلة الخطر الأكاديمي بالإضافة إلى توفير واجهات برمجية متطورة تتيح ربط النظام بتطبيقات الهواتف الذكية لضمان سهولة الوصول وسرعة الاستجابة ومن المميزات الرائدة أيضاً دعمه الكامل للعمل كتطبيق ويب متقدم يتميز بالاستقرار والسرعة الفائقة وتوافقية تامة مع مختلف الأجهزة المحمولة والمتصفحات مما يجعله نظاماً سيادياً يعزز من جودة التعليم ويقلل من الأعباء الإدارية الروتينية بأسلوب عصري وأنيق.
+                <div class="relative max-w-5xl mx-auto">
+                    <div class="absolute -inset-4 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 rounded-[3rem] blur-2xl"></div>
+                    <div class="relative bg-white/60 backdrop-blur-2xl border border-white/80 rounded-[3rem] p-10 lg:p-16 shadow-2xl shadow-emerald-900/5 text-right space-y-8">
+                        
+                        <p class="text-xl lg:text-3xl text-slate-800 font-bold leading-relaxed text-justify">
+                            نظام تسجيل الحضور والغياب الذكي هو منصة أكاديمية متكاملة صممت خصيصاً لتلبية احتياجات كلية التقنيات الهندسية في جامعة بلاد الرافدين حيث يوفر حلولاً تقنية متقدمة لضبط العملية التدريسية من خلال تقديم تجربة رقمية فريدة تعتمد على تقنيات الـ QR الديناميكي التي تمنع التلاعب وتضمن دقة البيانات المسجلة.
+                        </p>
+
+                        <p class="text-lg lg:text-2xl text-slate-600 font-medium leading-relaxed text-justify">
+                            يتيح النظام للأساتذة إدارة محاضراتهم بمرونة عالية تشمل فتح المحاضرة بضغطة زر واحدة ومتابعة الحضور الآني للطلاب ومراجعة السجلات التاريخية بدقة متناهية كما يضم لوحة تحكم إدارية شاملة تمنح رئاسة القسم صلاحيات واسعة لإدارة بيانات المدرسين والطلبة والمواد الدراسية بفعالية قصوى.
+                        </p>
+
+                        <p class="text-lg lg:text-2xl text-slate-600 font-medium leading-relaxed text-justify border-r-4 border-emerald-500 pr-6">
+                            يتميز النظام أيضاً بنظام إنذارات ذكي يقوم بتحليل غيابات الطلاب تلقائياً وتنبيههم قبل وصولهم لمرحلة الخطر الأكاديمي بالإضافة إلى توفير واجهات برمجية متطورة ودعمه الكامل للعمل كتطبيق ويب متقدم يتميز بالاستقرار والسرعة الفائقة وتوافقية تامة مع مختلف الأجهزة المحمولة مما يجعله نظاماً سيادياً يعزز من جودة التعليم.
                         </p>
                     </div>
                 </div>
 
                 <!-- Primary Action -->
-                <div class="flex flex-col items-center gap-10 pt-6">
+                <div class="flex flex-col items-center gap-12 pt-8">
                     <Link
                         :href="route('login')"
-                        class="group relative inline-flex items-center justify-center px-12 py-5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black text-xl rounded-2xl shadow-2xl shadow-emerald-500/40 hover:shadow-emerald-500/60 transition-all hover:-translate-y-1 active:scale-95 overflow-hidden"
+                        class="group relative inline-flex items-center justify-center px-16 py-6 bg-slate-900 text-white font-black text-2xl rounded-[2rem] shadow-2xl shadow-slate-900/20 hover:shadow-emerald-500/40 transition-all hover:-translate-y-1 active:scale-95 overflow-hidden"
                     >
                         <span class="relative z-10 flex items-center gap-4">
-                            <LogInIcon class="w-7 h-7" />
+                            <LogInIcon class="w-8 h-8" />
                             دخول بوابة النظام
-                            <ChevronLeftIcon class="w-5 h-5 group-hover:-translate-x-2 transition-transform duration-300" />
+                            <ChevronLeftIcon class="w-6 h-6 group-hover:-translate-x-2 transition-transform duration-300" />
                         </span>
-                        <div class="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div class="absolute inset-0 bg-gradient-to-r from-emerald-600 to-teal-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     </Link>
                     
                     <!-- Modern Tech Badges -->
