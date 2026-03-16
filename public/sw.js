@@ -1,4 +1,4 @@
-const CACHE_NAME = 'attendance-v1.1';
+const CACHE_NAME = 'attendance-v1.2';
 const ASSETS_TO_CACHE = [
     '/',
     '/manifest.json',
@@ -29,15 +29,36 @@ self.addEventListener('activate', (event) => {
             );
         })
     );
+    self.clients.claim();
 });
 
 // Fetch Event
 self.addEventListener('fetch', (event) => {
+    // Skip non-GET requests
+    if (event.request.method !== 'GET') return;
+
+    // Use Network-First strategy for most requests to avoid stale content
     event.respondWith(
-        caches.match(event.request).then((response) => {
-            return response || fetch(event.request).catch(() => {
-                return caches.match('/');
-            });
-        })
+        fetch(event.request)
+            .then((response) => {
+                // Cache the new response if it's a valid asset
+                if (response.status === 200 && ASSETS_TO_CACHE.includes(new URL(event.request.url).pathname)) {
+                    const responseClone = response.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(event.request, responseClone);
+                    });
+                }
+                return response;
+            })
+            .catch(() => {
+                // Fallback to cache if network fails
+                return caches.match(event.request).then((cachedResponse) => {
+                    if (cachedResponse) return cachedResponse;
+                    // If no cache, return the offline fallback for navigation
+                    if (event.request.mode === 'navigate') {
+                        return caches.match('/');
+                    }
+                });
+            })
     );
 });
