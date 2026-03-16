@@ -110,10 +110,10 @@ defineProps<{
 </template>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap');
 
 .font-sans {
-    font-family: 'Cairo', 'Tajawal', sans-serif !important;
+    font-family: 'IBM Plex Sans Arabic', sans-serif !important;
 }
 
 .rtl {
