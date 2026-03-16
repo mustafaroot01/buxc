@@ -206,6 +206,11 @@ const hasRole = (userTokens: any, navRoles: string[], excludeRoles?: string[]) =
                     <MenuIcon class="h-6 w-6" aria-hidden="true" />
                 </button>
 
+                <!-- School Name for mobile -->
+                <div class="lg:hidden flex-1 px-4 truncate">
+                    <span class="text-sm font-black text-gray-900 truncate block">{{ settings?.school_name || 'النظام الأكاديمي' }}</span>
+                </div>
+
                 <!-- Separator -->
                 <div class="h-6 w-px bg-gray-200 lg:hidden" aria-hidden="true" />
 

@@ -17,7 +17,11 @@
         <link rel="apple-touch-icon" href="/pwa-icon.png">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-        <meta name="apple-mobile-web-app-title" content="الحضور والغياب">
+        <meta name="apple-mobile-web-app-title" content="الحضور">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="application-name" content="نظام الحضور">
+        <meta name="msapplication-TileColor" content="#0d9488">
+        <meta name="msapplication-tap-highlight" content="no">
 
         <!-- Scripts -->
         @routes

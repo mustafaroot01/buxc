@@ -123,8 +123,8 @@ const confirmDeactivate = async () => {
                 </div>
 
                 <!-- Stats Cards -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 px-1 sm:px-0">
+                    <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                         <div class="flex items-center justify-between mb-3">
                             <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center">
                                 <BookOpenIcon class="w-5 h-5 text-teal-600" />
