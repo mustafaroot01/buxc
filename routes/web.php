@@ -8,10 +8,15 @@ use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
 use App\Http\Controllers\Teacher\WarningController as TeacherWarningController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::get('/', function () {
-    return redirect()->route('login');
+    return Inertia::render('Welcome');
 });
+
+Route::get('/about', function () {
+    return Inertia::render('About');
+})->name('about');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Admin Routes

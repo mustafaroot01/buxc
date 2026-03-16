@@ -23,7 +23,8 @@ import {
     HeartIcon,
     ClipboardListIcon,
     RefreshCcwIcon,
-    SmartphoneIcon
+    SmartphoneIcon,
+    InfoIcon
 } from 'lucide-vue-next';
 import {
     Dialog,
@@ -144,6 +145,14 @@ const hasRole = (userTokens: any, navRoles: string[], excludeRoles?: string[]) =
              :class="desktopSidebarOpen ? 'translate-x-0' : 'translate-x-full'">
             <!-- Sidebar component, swap this element with another sidebar if you like -->
             <div class="flex grow flex-col gap-y-5 overflow-y-auto border-e border-gray-200 bg-white px-6 pb-4">
+                <!-- About Page Link -->
+                <div class="px-6 py-4 border-t border-gray-100">
+                    <Link :href="route('about')" class="group flex items-center gap-x-3 rounded-xl p-3 text-[15px] font-bold text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 border-e-4 border-transparent hover:border-emerald-500">
+                        <InfoIcon class="h-5 w-5 text-gray-400 group-hover:text-emerald-600 transition-colors" />
+                        عن التطبيق
+                    </Link>
+                </div>
+
                 <div class="flex h-16 shrink-0 items-center mt-2 border-b border-gray-100">
                     <Link :href="route('dashboard')" class="flex items-center gap-3">
                         <div class="flex items-center justify-center p-1.5 bg-teal-50 rounded-xl shadow-sm border border-teal-100/50">
