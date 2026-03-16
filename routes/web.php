@@ -11,7 +11,20 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('Welcome');
+    if (auth()->check()) {
+        $user = auth()->user();
+        if ($user->hasRole('admin') || $user->hasRole('super_admin')) {
+            return redirect()->route('admin.dashboard');
+        }
+        return redirect()->route('teacher.dashboard');
+    }
+
+    return Inertia::render('Welcome', [
+        'canLogin' => Route::has('login'),
+        'canRegister' => Route::has('register'),
+        'laravelVersion' => \Illuminate\Foundation\Application::VERSION,
+        'phpVersion' => PHP_VERSION,
+    ]);
 });
 
 Route::get('/about', function () {
