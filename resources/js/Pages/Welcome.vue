@@ -162,7 +162,6 @@ defineProps<{
             </footer>
 
         </div>
-        </div>
     </div>
 </template>
 
