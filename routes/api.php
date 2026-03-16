@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
+    Route::get('/about', [\App\Http\Controllers\Api\AboutController::class, '__invoke']);
 
     Route::middleware(['auth:sanctum', \App\Http\Middleware\ForceJsonResponse::class])->group(function () {
         Route::get('/user', function (Request $request) {
