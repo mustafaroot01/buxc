@@ -37,6 +37,11 @@ class ScannerController extends Controller
             return $this->error('رمز QR غير صالح أو مزور! يرجى التأكد من المصدر.', 400); // Red Alert case
         }
 
+        // 3.5 Ban Check
+        if ($student->isBannedFromAttendance()) {
+            return $this->error('عذراً، هذا الطالب محظور من تسجيل الحضور. يرجى مراجعة الإدارة.', 403);
+        }
+
         // 4. Duplicate Check
         $existingAttendance = Attendance::where('lecture_id', $lecture->id)
             ->where('student_id', $student->id)

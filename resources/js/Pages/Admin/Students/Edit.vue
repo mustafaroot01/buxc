@@ -29,6 +29,8 @@ const form = useForm({
     group_id: props.student.group_id || '',
     study_type: props.student.group?.study_type || 'morning',
     photo: null as File | null,
+    is_banned_from_attendance: props.student.is_banned_from_attendance ? true : false,
+    ban_reason: props.student.ban_reason || '',
 });
 
 // Computed property to filter groups based on selected stage and study type
@@ -160,6 +162,31 @@ const submit = () => {
                                 </div>
                             </div>
                             
+                            <!-- Administrative Status -->
+                            <div class="space-y-6">
+                                <h3 class="text-lg font-bold text-gray-900 border-b pb-2 mt-8 text-rose-600 border-rose-100 flex items-center">
+                                    <ShieldAlertIcon class="w-5 h-5 ml-2" />
+                                    الحالة الإدارية (حظر الحضور)
+                                </h3>
+                                <div class="bg-rose-50/50 p-6 rounded-2xl border border-rose-100 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="flex items-center space-x-4 space-x-reverse">
+                                        <div class="flex-shrink-0">
+                                            <input type="checkbox" id="is_banned_from_attendance" v-model="form.is_banned_from_attendance" class="w-5 h-5 text-rose-600 bg-white border-gray-300 rounded focus:ring-rose-500 focus:ring-2">
+                                        </div>
+                                        <div>
+                                            <label for="is_banned_from_attendance" class="font-bold text-gray-900 cursor-pointer text-sm">حظر الطالب من الحضور</label>
+                                            <p class="text-xs text-gray-500 mt-1">عند التفعيل، لن يتمكن الطالب من تسجيل حضوره في واجهات التطبيق.</p>
+                                        </div>
+                                    </div>
+
+                                    <div v-show="form.is_banned_from_attendance" class="transition-all duration-300">
+                                        <label class="block text-sm font-bold text-gray-700 mb-2">سبب الحظر (اختياري)</label>
+                                        <input type="text" v-model="form.ban_reason" class="bg-white border border-rose-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 block w-full p-3 transition-colors placeholder-gray-400" placeholder="مثال: غيابات متكررة، تأخير أقساط...">
+                                        <div v-if="form.errors.ban_reason" class="mt-2 text-sm text-red-600">{{ form.errors.ban_reason }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Notice -->
                             <div class="bg-teal-50 border border-blue-100 rounded-xl p-4 flex items-start">
                                 <QrCodeIcon class="w-5 h-5 text-blue-600 mt-0.5 ml-3 flex-shrink-0" />

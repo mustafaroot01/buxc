@@ -73,6 +73,8 @@ class StudentController extends Controller
             'group_id' => 'required|exists:academic_groups,id',
             'study_type' => 'required|in:morning,evening',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'is_banned_from_attendance' => 'nullable|boolean',
+            'ban_reason' => 'nullable|string|max:1000',
         ]);
 
         if ($request->hasFile('photo')) {
@@ -112,6 +114,8 @@ class StudentController extends Controller
             'group_id' => 'required|exists:academic_groups,id',
             'study_type' => 'required|in:morning,evening',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'is_banned_from_attendance' => 'nullable|boolean',
+            'ban_reason' => 'nullable|string|max:1000',
         ]);
 
         if ($request->hasFile('photo')) {

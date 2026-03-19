@@ -130,6 +130,16 @@ class AttendanceSyncController extends Controller
                     continue;
                 }
 
+                if ($student->isBannedFromAttendance()) {
+                    $failedCount++;
+                    $errorDetails[] = [
+                        'student_id' => $scanData['student_id'],
+                        'error' => 'Student is banned from attendance',
+                        'request_id' => $scanData['request_id']
+                    ];
+                    continue;
+                }
+
                 $scannedAt = Carbon::parse($scanData['scanned_at']);
                 $attendance = $existingAttendancesMap->get($student->id);
 

@@ -59,6 +59,7 @@ class StudentSyncController extends Controller
                 'stage_name' => $student->group->stage->name ?? 'N/A',
                 'study_type' => $student->group->study_type ?? 'N/A',
                 'version' => $student->version,
+                'is_banned' => (bool) $student->is_banned_from_attendance,
             ];
         })->values();
 

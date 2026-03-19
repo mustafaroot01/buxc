@@ -56,6 +56,12 @@ class Student extends Model
         'qr_payload',
         'consecutive_absences',
         'offline_id',
+        'is_banned_from_attendance',
+        'ban_reason',
+    ];
+
+    protected $casts = [
+        'is_banned_from_attendance' => 'boolean',
     ];
 
     protected $hidden = [
@@ -80,5 +86,10 @@ class Student extends Model
     public function getFullNameAttribute()
     {
         return trim("{$this->first_name} {$this->second_name} {$this->last_name}");
+    }
+
+    public function isBannedFromAttendance(): bool
+    {
+        return $this->is_banned_from_attendance;
     }
 }

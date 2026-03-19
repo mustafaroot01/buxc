@@ -26,6 +26,8 @@ const props = defineProps<{
         };
         warnings?: Array<any>;
         consecutive_absences: number;
+        is_banned_from_attendance: boolean;
+        ban_reason?: string;
     };
     attendances: {
         data: Array<any>;
@@ -103,8 +105,26 @@ const confirmDeleteStudent = () => {
         <div class="py-10 bg-[#fafafa] min-h-screen">
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
                 
+                <!-- Ban Alert Banner -->
+                <div v-if="student.is_banned_from_attendance" class="mb-8 bg-red-100 border-l-4 border-red-600 rounded-2xl p-6 shadow-sm flex items-start print-hidden">
+                    <div class="flex-shrink-0">
+                        <XCircleIcon class="h-8 w-8 text-red-600" />
+                    </div>
+                    <div class="mr-4">
+                        <h3 class="text-xl font-black text-red-900">
+                            هذا الطالب محظور من تسجيل الحضور!
+                        </h3>
+                        <div class="mt-2 text-sm text-red-800 space-y-2">
+                            <p class="font-bold">سبب الحظر: {{ student.ban_reason || 'غير محدد' }}</p>
+                            <p class="font-bold bg-red-200 inline-block px-3 py-1 rounded-lg mt-2 text-red-900">
+                                لا يمكن تسجيل حضور هذا الطالب عن طريق المسح أو يدوياً عبر التطبيق. يرجى مراجعة لوحة الإدارة لفك الحظر.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Active Warning Alert Banner -->
-                <div v-if="student.warnings && student.warnings.filter(w => !w.resolved_at).length > 0" class="mb-8 bg-red-50 border-r-4 border-red-500 rounded-2xl p-6 shadow-sm flex items-start print-hidden">
+                <div v-if="student.warnings && student.warnings.filter(w => !w.resolved_at).length > 0" class="mb-8 bg-amber-50 border-r-4 border-amber-500 rounded-2xl p-6 shadow-sm flex items-start print-hidden">
                     <div class="flex-shrink-0">
                         <AlertTriangleIcon class="h-8 w-8 text-red-500 animate-pulse" />
                     </div>
