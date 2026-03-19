@@ -24,13 +24,17 @@ import {
     ClipboardListIcon,
     RefreshCcwIcon,
     SmartphoneIcon,
-    InfoIcon
+    InfoIcon,
+    ChevronDownIcon
 } from 'lucide-vue-next';
 import {
     Dialog,
     DialogPanel,
     TransitionChild,
     TransitionRoot,
+    Disclosure,
+    DisclosureButton,
+    DisclosurePanel,
 } from '@headlessui/vue';
 
 const sidebarOpen = ref(false);
@@ -39,43 +43,101 @@ const desktopSidebarOpen = ref(true);
 const page = usePage();
 const settings = page.props.settings as any;
 
-const navigation = [
+interface NavChild {
+    name: string;
+    href: string;
+    current: boolean;
+    roles?: string[];
+    excludeRoles?: string[];
+}
+
+interface NavItem {
+    name: string;
+    href?: string;
+    current?: boolean;
+    icon: any;
+    roles?: string[];
+    excludeRoles?: string[];
+    children?: NavChild[];
+}
+
+const navigation: NavItem[] = [
     { name: 'لوحة التحكم', href: route('dashboard'), current: route().current('dashboard'), icon: LayoutDashboardIcon, roles: ['admin', 'super_admin', 'teacher'] },
     
-    // Admin / Super Admin
-    { name: 'الطلاب', href: route('admin.students.index'), current: route().current('admin.students.*'), icon: UsersIcon, roles: ['admin', 'super_admin'] },
-    { name: 'الأساتذة', href: route('admin.teachers.index'), current: route().current('admin.teachers.*'), icon: GraduationCapIcon, roles: ['admin', 'super_admin'] },
-    { name: 'المراحل', href: route('admin.stages.index'), current: route().current('admin.stages.*'), icon: LayersIcon, roles: ['admin', 'super_admin'] },
-    { name: 'المجموعات', href: route('admin.groups.index'), current: route().current('admin.groups.*'), icon: UsersIcon, roles: ['admin', 'super_admin'] },
-    { name: 'المواد', href: route('admin.subjects.index'), current: route().current('admin.subjects.*'), icon: BookOpenIcon, roles: ['admin', 'super_admin'] },
-    { name: 'المحاضرات', href: route('admin.lectures.index'), current: route().current('admin.lectures.*'), icon: BookOpenIcon, roles: ['admin', 'super_admin'] },
-    { name: 'طباعة QR', href: route('admin.print.qrs'), current: route().current('admin.print.qrs'), icon: QrCodeIcon, roles: ['admin', 'super_admin'] },
-    { name: 'التقارير', href: route('admin.reports.index'), current: route().current('admin.reports.*'), icon: FileBarChartIcon, roles: ['admin', 'super_admin'] },
-    { name: 'تنبيهات الغياب', href: route('admin.warnings.index'), current: route().current('admin.warnings.*'), icon: AlertTriangleIcon, roles: ['admin', 'super_admin'] },
-    { name: 'الأرشيف', href: route('admin.archive.index'), current: route().current('admin.archive.*'), icon: ArchiveIcon, roles: ['admin', 'super_admin'] },
-    { name: 'أرشيف المحاضرات', href: route('admin.archives.lectures.index'), current: route().current('admin.archives.lectures.*'), icon: ArchiveIcon, roles: ['admin', 'super_admin'] },
-    
-    // Super Admin only
-    { name: 'سجل النشاطات', href: route('admin.audit.index'), current: route().current('admin.audit.*'), icon: ActivityIcon, roles: ['super_admin'] },
-    { name: 'أخطاء المزامنة', href: route('admin.system.sync-logs'), current: route().current('admin.system.sync-logs'), icon: RefreshCcwIcon, roles: ['super_admin'] },
-    { name: 'مركز أخطاء API', href: route('admin.system.sync-logs.errors'), current: route().current('admin.system.sync-logs.errors'), icon: AlertTriangleIcon, roles: ['super_admin'] },
-    { name: 'إدارة الأجهزة', href: route('admin.system.devices.index'), current: route().current('admin.system.devices.*'), icon: SmartphoneIcon, roles: ['super_admin'] },
-    { name: 'مركز صحة النظام', href: route('admin.system.health'), current: route().current('admin.system.health'), icon: ActivityIcon, roles: ['super_admin'] },
-    { name: 'إدارة النظام', href: route('admin.system.index'), current: route().current('admin.system.*'), icon: SettingsIcon, roles: ['admin', 'super_admin'] },
-    { name: 'التسجيل', href: route('admin.registrations.index'), current: route().current('admin.registrations.*'), icon: ClipboardListIcon, roles: ['super_admin'] },
-    { name: 'الإعدادات', href: route('admin.settings.index'), current: route().current('admin.settings.*'), icon: SettingsIcon, roles: ['super_admin'] },
-    
-    // Teacher only
-    { name: 'محاضراتي', href: route('teacher.lectures.index'), current: route().current('teacher.lectures.*'), icon: BookOpenIcon, roles: ['teacher'], excludeRoles: ['admin', 'super_admin'] },
-    { name: 'تنبيهات طلابي', href: route('teacher.warnings.index'), current: route().current('teacher.warnings.*'), icon: AlertTriangleIcon, roles: ['teacher'], excludeRoles: ['admin', 'super_admin'] },
+    {
+        name: 'الإدارة الأكاديمية',
+        icon: GraduationCapIcon,
+        roles: ['admin', 'super_admin'],
+        children: [
+            { name: 'الطلاب', href: route('admin.students.index'), current: route().current('admin.students.*') },
+            { name: 'الأساتذة', href: route('admin.teachers.index'), current: route().current('admin.teachers.*') },
+            { name: 'المراحل', href: route('admin.stages.index'), current: route().current('admin.stages.*') },
+            { name: 'المجموعات', href: route('admin.groups.index'), current: route().current('admin.groups.*') },
+            { name: 'المواد', href: route('admin.subjects.index'), current: route().current('admin.subjects.*') },
+        ]
+    },
+    {
+        name: 'الحضور والغياب',
+        icon: ClipboardListIcon,
+        roles: ['admin', 'super_admin'],
+        children: [
+            { name: 'المحاضرات', href: route('admin.lectures.index'), current: route().current('admin.lectures.*') },
+            { name: 'تنبيهات الغياب', href: route('admin.warnings.index'), current: route().current('admin.warnings.*') },
+            { name: 'طباعة QR', href: route('admin.print.qrs'), current: route().current('admin.print.qrs') },
+            { name: 'التقارير', href: route('admin.reports.index'), current: route().current('admin.reports.*') },
+        ]
+    },
+    {
+        name: 'الأرشيف',
+        icon: ArchiveIcon,
+        roles: ['admin', 'super_admin'],
+        children: [
+            { name: 'الأرشيف العام', href: route('admin.archive.index'), current: route().current('admin.archive.*') },
+            { name: 'أرشيف المحاضرات', href: route('admin.archives.lectures.index'), current: route().current('admin.archives.lectures.*') },
+        ]
+    },
+    {
+        name: 'إعدادات النظام',
+        icon: SettingsIcon,
+        roles: ['admin', 'super_admin'],
+        children: [
+            { name: 'إدارة النظام', href: route('admin.system.index'), current: route().current('admin.system.*'), roles: ['admin', 'super_admin'] },
+            { name: 'الإعدادات العامة', href: route('admin.settings.index'), current: route().current('admin.settings.*'), roles: ['super_admin'] },
+            { name: 'طلبات الانضمام', href: route('admin.registrations.index'), current: route().current('admin.registrations.*'), roles: ['super_admin'] },
+            { name: 'إدارة الأجهزة', href: route('admin.system.devices.index'), current: route().current('admin.system.devices.*'), roles: ['super_admin'] },
+        ]
+    },
+    {
+        name: 'المراقبة والصيانة',
+        icon: ActivityIcon,
+        roles: ['super_admin'],
+        children: [
+            { name: 'صحة النظام', href: route('admin.system.health'), current: route().current('admin.system.health') },
+            { name: 'سجل النشاطات', href: route('admin.audit.index'), current: route().current('admin.audit.*') },
+            { name: 'أخطاء المزامنة', href: route('admin.system.sync-logs'), current: route().current('admin.system.sync-logs') },
+            { name: 'مركز أخطاء API', href: route('admin.system.sync-logs.errors'), current: route().current('admin.system.sync-logs.errors') },
+        ]
+    },
+    {
+        name: 'مهامي الأكاديمية',
+        icon: BookOpenIcon,
+        roles: ['teacher'],
+        excludeRoles: ['admin', 'super_admin'],
+        children: [
+            { name: 'محاضراتي', href: route('teacher.lectures.index'), current: route().current('teacher.lectures.*') },
+            { name: 'تنبيهات طلابي', href: route('teacher.warnings.index'), current: route().current('teacher.warnings.*') },
+        ]
+    }
 ];
 
-const hasRole = (userTokens: any, navRoles: string[], excludeRoles?: string[]) => {
+const hasRole = (userTokens: any, navRoles?: string[], excludeRoles?: string[]) => {
     if (!userTokens) return false;
     
     if (excludeRoles && excludeRoles.some(r => userTokens.includes(r))) {
         return false;
     }
+
+    if (!navRoles) return true;
     
     return navRoles.some(r => userTokens.includes(r));
 };
@@ -113,10 +175,34 @@ const hasRole = (userTokens: any, navRoles: string[], excludeRoles?: string[]) =
                                             <ul role="list" class="-mx-2 space-y-1">
                                                 <template v-for="item in navigation" :key="item.name">
                                                     <li v-if="hasRole($page.props.auth.user.roles, item.roles, item.excludeRoles)">
-                                                        <Link :href="item.href" prefetch :class="[item.current ? 'bg-teal-50 text-teal-600 font-bold' : 'text-gray-700 hover:text-teal-600 hover:bg-gray-50', 'group flex gap-x-3 rounded-xl p-2.5 text-sm leading-6 transition-all']">
-                                                            <component :is="item.icon" :class="[item.current ? 'text-teal-600' : 'text-gray-400 group-hover:text-teal-600', 'h-5 w-5 shrink-0 transition-colors']" aria-hidden="true" />
-                                                            {{ item.name }}
-                                                        </Link>
+                                                        <template v-if="!item.children">
+                                                            <Link :href="item.href" prefetch :class="[item.current ? 'bg-teal-50 text-teal-600 font-bold' : 'text-gray-700 hover:text-teal-600 hover:bg-gray-50', 'group flex gap-x-3 rounded-xl p-2.5 text-sm leading-6 transition-all']">
+                                                                <component :is="item.icon" :class="[item.current ? 'text-teal-600' : 'text-gray-400 group-hover:text-teal-600', 'h-5 w-5 shrink-0 transition-colors']" aria-hidden="true" />
+                                                                {{ item.name }}
+                                                            </Link>
+                                                        </template>
+                                                        <Disclosure as="div" v-else v-slot="{ open }" :defaultOpen="item.children.some(c => c.current)">
+                                                            <DisclosureButton :class="[item.children.some(c => c.current) ? 'bg-teal-50 text-teal-700 font-bold' : 'text-gray-700 hover:bg-gray-50 hover:text-teal-700', 'flex w-full items-center justify-between rounded-xl p-2.5 text-sm transition-colors duration-200 outline-none']">
+                                                                <div class="flex items-center gap-x-3">
+                                                                    <component :is="item.icon" :class="[item.children.some(c => c.current) ? 'text-teal-600' : 'text-gray-400 group-hover:text-teal-500', 'h-5 w-5 shrink-0 transition-colors']" aria-hidden="true" />
+                                                                    {{ item.name }}
+                                                                </div>
+                                                                <ChevronDownIcon :class="[open ? 'rotate-180 text-teal-600' : 'text-gray-400', 'h-4 w-4 shrink-0 transition-transform duration-200']" aria-hidden="true" />
+                                                            </DisclosureButton>
+                                                            <TransitionRoot enter="transition-all duration-300 ease-out" enterFrom="transform scale-y-95 opacity-0 max-h-0" enterTo="transform scale-y-100 opacity-100 max-h-[500px]" leave="transition-all duration-200 ease-in" leaveFrom="transform scale-y-100 opacity-100 max-h-[500px]" leaveTo="transform scale-y-95 opacity-0 max-h-0">
+                                                                <DisclosurePanel class="mt-1 px-3 overflow-hidden">
+                                                                    <ul role="list" class="space-y-1 border-s-2 border-teal-100/50 ms-3 ps-2 py-1">
+                                                                        <template v-for="child in item.children" :key="child.name">
+                                                                            <li v-if="hasRole($page.props.auth.user.roles, child.roles, child.excludeRoles)">
+                                                                                <Link :href="child.href" prefetch :class="[child.current ? 'text-teal-700 font-bold bg-white shadow-sm ring-1 ring-gray-100 rounded-lg' : 'text-gray-500 hover:text-teal-600 hover:bg-gray-50 rounded-lg font-medium', 'group flex gap-x-3 p-2 text-[13px] transition-all']">
+                                                                                    {{ child.name }}
+                                                                                </Link>
+                                                                            </li>
+                                                                        </template>
+                                                                    </ul>
+                                                                </DisclosurePanel>
+                                                            </TransitionRoot>
+                                                        </Disclosure>
                                                     </li>
                                                 </template>
                                             </ul>
@@ -168,10 +254,34 @@ const hasRole = (userTokens: any, navRoles: string[], excludeRoles?: string[]) =
                             <ul role="list" class="-mx-2 space-y-1.5">
                                 <template v-for="item in navigation" :key="item.name">
                                     <li v-if="hasRole($page.props.auth.user.roles, item.roles, item.excludeRoles)">
-                                        <Link :href="item.href" prefetch :class="[item.current ? 'bg-teal-50 text-teal-700 font-bold border-e-4 border-teal-600' : 'text-gray-600 font-medium hover:text-teal-700 hover:bg-teal-50/50 border-e-4 border-transparent hover:border-teal-300', 'group flex items-center gap-x-3 rounded-s-xl p-3 text-[15px] leading-6 transition-all duration-200']">
-                                            <component :is="item.icon" :class="[item.current ? 'text-teal-600' : 'text-gray-400 group-hover:text-teal-500', 'h-5 w-5 shrink-0 transition-colors']" aria-hidden="true" />
-                                            {{ item.name }}
-                                        </Link>
+                                        <template v-if="!item.children">
+                                            <Link :href="item.href" prefetch :class="[item.current ? 'bg-teal-50 text-teal-700 font-bold border-e-4 border-teal-600' : 'text-gray-600 font-medium hover:text-teal-700 hover:bg-teal-50/50 border-e-4 border-transparent hover:border-teal-300', 'group flex items-center gap-x-3 rounded-s-xl p-3 text-[15px] leading-6 transition-all duration-200']">
+                                                <component :is="item.icon" :class="[item.current ? 'text-teal-600' : 'text-gray-400 group-hover:text-teal-500', 'h-5 w-5 shrink-0 transition-colors']" aria-hidden="true" />
+                                                {{ item.name }}
+                                            </Link>
+                                        </template>
+                                        <Disclosure as="div" v-else v-slot="{ open }" :defaultOpen="item.children.some(c => c.current)">
+                                            <DisclosureButton :class="[item.children.some(c => c.current) ? 'bg-teal-50 text-teal-700 font-bold border-e-4 border-teal-600' : 'text-gray-600 font-medium hover:text-teal-700 hover:bg-teal-50/50 border-e-4 border-transparent hover:border-teal-300', 'flex w-full items-center justify-between rounded-s-xl p-3 text-[15px] transition-all duration-200 outline-none']">
+                                                <div class="flex items-center gap-x-3">
+                                                    <component :is="item.icon" :class="[item.children.some(c => c.current) ? 'text-teal-600' : 'text-gray-400 group-hover:text-teal-500', 'h-5 w-5 shrink-0 transition-colors']" aria-hidden="true" />
+                                                    {{ item.name }}
+                                                </div>
+                                                <ChevronDownIcon :class="[open ? 'rotate-180 text-teal-600' : 'text-gray-400', 'h-4 w-4 shrink-0 transition-transform duration-200']" aria-hidden="true" />
+                                            </DisclosureButton>
+                                            <TransitionRoot enter="transition-all duration-300 ease-out" enterFrom="transform scale-y-95 opacity-0 max-h-0" enterTo="transform scale-y-100 opacity-100 max-h-[600px]" leave="transition-all duration-200 ease-in" leaveFrom="transform scale-y-100 opacity-100 max-h-[600px]" leaveTo="transform scale-y-95 opacity-0 max-h-0">
+                                                <DisclosurePanel class="mt-1 px-3 overflow-hidden">
+                                                    <ul role="list" class="space-y-1 border-s-2 border-teal-100/50 ms-3 ps-3 py-2">
+                                                        <template v-for="child in item.children" :key="child.name">
+                                                            <li v-if="hasRole($page.props.auth.user.roles, child.roles, child.excludeRoles)">
+                                                                <Link :href="child.href" prefetch :class="[child.current ? 'text-teal-700 font-bold bg-white shadow-sm ring-1 ring-gray-100 rounded-lg' : 'text-gray-500 hover:text-teal-600 hover:bg-gray-50 rounded-lg font-medium', 'group flex items-center p-2 text-[14px] transition-all']">
+                                                                    {{ child.name }}
+                                                                </Link>
+                                                            </li>
+                                                        </template>
+                                                    </ul>
+                                                </DisclosurePanel>
+                                            </TransitionRoot>
+                                        </Disclosure>
                                     </li>
                                 </template>
                             </ul>

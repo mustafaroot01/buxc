@@ -44,6 +44,7 @@ class DashboardController extends Controller
         return Inertia::render('Admin/Dashboard', [
             'stats' => $stats,
             'recentActivity' => $recentActivity,
+            'todayDate' => \Carbon\Carbon::now()->translatedFormat('l، d F Y'),
         ]);
     }
 }
