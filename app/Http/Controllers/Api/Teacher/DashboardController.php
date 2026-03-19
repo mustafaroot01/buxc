@@ -38,8 +38,8 @@ class DashboardController extends Controller
             ->get();
 
         $recentWarnings = Warning::with(['student.group.stage'])
-            ->whereIn('student_id', function ($query) use ($myGroupIds) {
-                $query->select('id')->from('students')->whereIn('group_id', $myGroupIds);
+            ->whereHas('student', function ($query) use ($myGroupIds) {
+                $query->whereIn('group_id', $myGroupIds);
             })
             ->whereNull('resolved_at')
             ->orderBy('issued_at', 'desc')
@@ -48,9 +48,9 @@ class DashboardController extends Controller
             ->map(function ($warning) {
                 return [
                     'id' => $warning->id,
-                    'student_name' => $warning->student->full_name,
-                    'stage_name' => $warning->student->group->stage->name ?? 'N/A',
-                    'group_name' => $warning->student->group->name ?? 'N/A',
+                    'student_name' => $warning->student?->full_name ?? 'طالب بأرشيف الحذف',
+                    'stage_name' => $warning->student?->group?->stage?->name ?? 'N/A',
+                    'group_name' => $warning->student?->group?->name ?? 'N/A',
                     'issued_at_human' => $warning->issued_at->diffForHumans(),
                 ];
             });
