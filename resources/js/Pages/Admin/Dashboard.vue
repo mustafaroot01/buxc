@@ -10,6 +10,7 @@ defineProps<{
         active_subjects: number;
         todays_lectures: number;
         active_warnings: number;
+        banned_students: number;
     };
     recentActivity: Array<{
         id: number;
@@ -33,7 +34,7 @@ defineProps<{
         <div class="py-12 bg-gray-50 min-h-screen">
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
                 <!-- Stats Grid - Premium & Neat Redesign -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-10">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6 mb-10">
                     <!-- Total Students -->
                     <div class="group relative overflow-hidden bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100/60 transition-all hover:shadow-xl hover:-translate-y-1 duration-300">
                         <div class="flex flex-col h-full justify-between gap-4">
@@ -117,6 +118,23 @@ defineProps<{
                             </div>
                         </div>
                         <div class="absolute bottom-0 left-0 w-full h-1 bg-red-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+                    </Link>
+
+                    <!-- Banned Students -->
+                    <Link :href="route('admin.students.index', { is_banned: 1 })" class="group relative overflow-hidden bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100/60 transition-all hover:shadow-xl hover:-translate-y-1 duration-300 block">
+                        <div class="flex flex-col h-full justify-between gap-4">
+                            <div class="flex items-center justify-between">
+                                <div class="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 group-hover:bg-rose-500 group-hover:text-white transition-colors duration-300" :class="{'animate-pulse': stats.banned_students > 0}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path><path d="m9 12 2 2 4-4"></path></svg>
+                                </div>
+                                <span class="text-[10px] font-black tracking-widest text-rose-300 uppercase">BANNED</span>
+                            </div>
+                            <div>
+                                <p class="text-[13px] font-bold text-gray-400 mb-1">الطلاب المحظورين</p>
+                                <p class="text-3xl font-black text-rose-600">{{ stats.banned_students }}</p>
+                            </div>
+                        </div>
+                        <div class="absolute bottom-0 left-0 w-full h-1 bg-rose-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
                     </Link>
                 </div>
 

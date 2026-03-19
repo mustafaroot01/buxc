@@ -25,6 +25,7 @@ class DashboardController extends Controller
             'active_subjects' => Subject::count(),
             'todays_lectures' => Lecture::whereDate('start_time', $today)->count(),
             'active_warnings' => Warning::whereNull('resolved_at')->count(),
+            'banned_students' => Student::where('is_banned_from_attendance', true)->count(),
         ];
 
         $recentActivity = Activity::with('causer')

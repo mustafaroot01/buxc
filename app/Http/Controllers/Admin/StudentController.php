@@ -42,6 +42,10 @@ class StudentController extends Controller
             });
         }
 
+        if ($request->has('is_banned') && $request->is_banned != '') {
+            $query->where('is_banned_from_attendance', $request->is_banned == 1);
+        }
+
         $students = $query->paginate(15)->withQueryString();
 
         $stages = \App\Models\AcademicStage::with('groups')->get();
@@ -49,7 +53,7 @@ class StudentController extends Controller
         return Inertia::render('Admin/Students/Index', [
             'students' => $students,
             'stages' => $stages,
-            'filters' => $request->only('search', 'stage_id', 'group_id', 'study_type')
+            'filters' => $request->only('search', 'stage_id', 'group_id', 'study_type', 'is_banned')
         ]);
     }
 

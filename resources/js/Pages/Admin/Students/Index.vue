@@ -18,6 +18,7 @@ const props = defineProps<{
         stage_id?: string;
         group_id?: string;
         study_type?: string;
+        is_banned?: string;
     };
 }>();
 
@@ -25,6 +26,7 @@ const search = ref(props.filters.search || '');
 const stage_id = ref(props.filters.stage_id || '');
 const group_id = ref(props.filters.group_id || '');
 const study_type = ref(props.filters.study_type || '');
+const is_banned = ref(props.filters.is_banned !== undefined ? props.filters.is_banned : '');
 
 // Derived available groups
 const availableGroups = computed(() => {
@@ -56,7 +58,8 @@ const filterData = () => {
             search: search.value,
             stage_id: stage_id.value,
             group_id: group_id.value,
-            study_type: study_type.value
+            study_type: study_type.value,
+            is_banned: is_banned.value
         },
         { preserveState: true, preserveScroll: true, replace: true }
     );
@@ -161,7 +164,7 @@ const confirmDeleteStudent = () => {
                         </div>
 
                         <!-- Filters Row -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <!-- Stage Filter -->
                             <div>
                                 <select v-model="stage_id" class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full p-3 transition-colors">
@@ -190,6 +193,16 @@ const confirmDeleteStudent = () => {
                                     </option>
                                 </select>
                             </div>
+
+                            <!-- Banned Filter -->
+                            <div>
+                                <select v-model="is_banned" @change="filterData" class="bg-gray-50 border border-rose-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 block w-full p-3 transition-colors">
+                                    <option value="">حالة الحضور (الكل)</option>
+                                    <option value="1">الطلاب المحظورين فقط</option>
+                                    <option value="0">الطلاب الغير محظورين</option>
+                                </select>
+                            </div>
+
                         </div>
                     </form>
                 </div>
@@ -216,13 +229,18 @@ const confirmDeleteStudent = () => {
                                     </td>
                                     <td class="px-6 py-5 whitespace-nowrap">
                                         <div class="flex items-center">
-                                            <div v-if="student.photo_path" class="w-10 h-10 rounded-full ml-4 border border-gray-200 shadow-sm overflow-hidden flex-shrink-0">
+                                            <div v-if="student.photo_path" class="w-10 h-10 rounded-full ml-4 border border-gray-200 shadow-sm overflow-hidden flex-shrink-0 relative">
                                                 <img :src="'/storage/' + student.photo_path" class="w-full h-full object-cover bg-gray-100" />
+                                                <div v-if="student.is_banned_from_attendance" class="absolute inset-0 border-2 border-rose-500 rounded-full"></div>
                                             </div>
-                                            <div v-else class="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-teal-600 font-bold ml-4 border border-indigo-100 flex-shrink-0">
+                                            <div v-else class="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-teal-600 font-bold ml-4 border border-indigo-100 flex-shrink-0 relative">
                                                 {{ student.first_name.charAt(0) }}
+                                                <div v-if="student.is_banned_from_attendance" class="absolute inset-0 border-2 border-rose-500 rounded-full"></div>
                                             </div>
-                                            <div class="text-[15px] font-bold text-gray-900">{{ student.first_name }} {{ student.second_name }} {{ student.last_name }}</div>
+                                            <div class="text-[15px] font-bold text-gray-900 flex items-center gap-2">
+                                                {{ student.first_name }} {{ student.second_name }} {{ student.last_name }}
+                                                <AlertTriangleIcon v-if="student.is_banned_from_attendance" class="w-4 h-4 text-rose-500" title="محظور من الحضور" />
+                                            </div>
                                         </div>
                                     </td>
                                     <td class="px-6 py-5 whitespace-nowrap text-center">
