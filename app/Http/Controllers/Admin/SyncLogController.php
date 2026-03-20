@@ -18,26 +18,54 @@ class SyncLogController extends Controller
             $query->withTrashed()->with(['subject', 'teacher']);
         }]);
 
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->get('search');
+            $query->where(function($q) use ($search) {
+                $q->where('sync_id', 'like', "%{$search}%")
+                  ->orWhere('device_id', 'like', "%{$search}%")
+                  ->orWhereHas('lecture', function($l) use ($search) {
+                      $l->where('title', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($request->has('status') && $request->status != '') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->has('date') && $request->date != '') {
+            $query->whereDate('synced_at', $request->date);
+        }
+
         $logs = $query->latest()
-            ->paginate(20)
+            ->paginate(15)
             ->withQueryString();
 
         // Calculate statistics for the dashboard
         $stats = [
-            'total_scans_today' => AttendanceSyncLog::whereDate('synced_at', '=', Carbon::today(), 'and')->sum('scans_processed'),
-            'failed_syncs_today' => AttendanceSyncLog::whereDate('synced_at', '=', Carbon::today(), 'and')
-                ->where(function ($query) {
-                    $query->where('status', '=', AttendanceSyncLog::STATUS_FAILED, 'and')
-                        ->orWhere('status', '=', AttendanceSyncLog::STATUS_PARTIAL, 'and');
-                }, null, null, 'and')->count('id'),
-            'avg_duration_ms' => round(AttendanceSyncLog::whereDate('synced_at', '=', Carbon::today(), 'and')->avg('duration_ms') ?? 0),
+            'total_scans_today' => AttendanceSyncLog::whereDate('synced_at', '=', Carbon::today())->sum('scans_processed'),
+            'failed_syncs_today' => AttendanceSyncLog::whereDate('synced_at', '=', Carbon::today())
+                ->whereIn('status', [AttendanceSyncLog::STATUS_FAILED, AttendanceSyncLog::STATUS_PARTIAL])
+                ->count(),
+            'avg_duration_ms' => round(AttendanceSyncLog::whereDate('synced_at', '=', Carbon::today())->avg('duration_ms') ?? 0),
             'total_devices' => AttendanceSyncLog::distinct('device_id')->count('device_id'),
         ];
 
         return Inertia::render('Admin/System/SyncLogs', [
             'logs' => $logs,
             'stats' => $stats,
+            'filters' => $request->only(['search', 'status', 'date'])
         ]);
+    }
+
+    public function clearOldLogs()
+    {
+        // Keep only last 30 days of logs by default
+        $date = Carbon::now()->subDays(30);
+        $count = AttendanceSyncLog::where('synced_at', '<', $date)->count();
+        AttendanceSyncLog::where('synced_at', '<', $date)->delete();
+
+        return back()->with('success', "تم تنظيف {$count} من السجلات القديمة بنجاح.");
     }
 
     public function errors()

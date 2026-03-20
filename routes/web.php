@@ -98,6 +98,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/system', [\App\Http\Controllers\Admin\SystemController::class, 'index'])->name('system.index');
             Route::post('/system/action', [\App\Http\Controllers\Admin\SystemController::class, 'action'])->name('system.action');
             Route::get('/system/sync-logs', [\App\Http\Controllers\Admin\SyncLogController::class, 'index'])->name('system.sync-logs');
+            Route::delete('/system/sync-logs/clear-old', [\App\Http\Controllers\Admin\SyncLogController::class, 'clearOldLogs'])->name('system.sync-logs.clear-old');
             Route::get('/system/sync-logs/errors', [\App\Http\Controllers\Admin\SyncLogController::class, 'errors'])->name('system.sync-logs.errors');
             Route::delete('/system/sync-logs/errors/clear', [\App\Http\Controllers\Admin\SyncLogController::class, 'clearErrors'])->name('system.sync-logs.errors.clear');
             Route::get('/system/devices', [\App\Http\Controllers\Admin\DeviceController::class, 'index'])->name('system.devices.index');

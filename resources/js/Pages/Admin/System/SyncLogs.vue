@@ -14,6 +14,15 @@ import {
 } from 'lucide-vue-next';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { ref, watch } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { 
+    SearchIcon, 
+    FilterIcon, 
+    Trash2Icon,
+    ChevronLeftIcon,
+    ChevronRightIcon
+} from 'lucide-vue-next';
 
 const props = defineProps<{
     logs: {
@@ -59,9 +68,40 @@ const props = defineProps<{
         total_devices: number;
     };
     filters: {
-        errors_only?: string;
+        search?: string;
+        status?: string;
+        date?: string;
     }
 }>();
+
+const searchTerm = ref(props.filters.search || '');
+const statusFilter = ref(props.filters.status || '');
+const dateFilter = ref(props.filters.date || '');
+
+const applyFilters = () => {
+    router.get(route('admin.system.sync-logs'), {
+        search: searchTerm.value,
+        status: statusFilter.value,
+        date: dateFilter.value
+    }, {
+        preserveState: true,
+        replace: true
+    });
+};
+
+watch([searchTerm, statusFilter, dateFilter], () => {
+    // Basic debounce for search
+    const timeoutId = setTimeout(() => {
+        applyFilters();
+    }, 500);
+    return () => clearTimeout(timeoutId);
+});
+
+const clearLogs = () => {
+    if (confirm('هل أنت متأكد من رغبتك في حذف السجلات التي مضى عليها أكثر من 30 يوماً؟ لا يمكن التراجع عن هذه العملية.')) {
+        router.delete(route('admin.system.sync-logs.clear-old'));
+    }
+};
 
 const getStatusBadge = (status: string) => {
     switch (status) {
@@ -96,6 +136,13 @@ const formatDate = (date: string) => {
                 </div>
                 
                 <div class="flex gap-2">
+                    <button 
+                        @click="clearLogs"
+                        class="px-5 py-2.5 rounded-2xl text-sm font-black transition-all flex items-center gap-2 border bg-white text-gray-600 border-gray-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 shadow-sm"
+                    >
+                        <Trash2Icon class="w-4 h-4" />
+                        تنظيف السجلات القديمة
+                    </button>
                     <Link 
                         :href="route('admin.system.sync-logs.errors')"
                         class="px-5 py-2.5 rounded-2xl text-sm font-black transition-all flex items-center gap-2 border bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100 shadow-sm"
@@ -103,6 +150,40 @@ const formatDate = (date: string) => {
                         <AlertTriangleIcon class="w-4 h-4" />
                         عرض المشاكل المكتشفة
                     </Link>
+                </div>
+            </div>
+
+            <!-- Filters Bar -->
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-wrap items-center gap-4 mt-8">
+                <div class="flex-1 min-w-[250px] relative">
+                    <SearchIcon class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input 
+                        v-model="searchTerm"
+                        type="text" 
+                        placeholder="بحث برقم المزامنة، الجهاز، أو عنوان المحاضرة..."
+                        class="w-full pr-10 pl-4 py-2.5 rounded-2xl border-gray-100 bg-gray-50/50 focus:bg-white focus:ring-teal-500/20 focus:border-teal-500 text-sm font-bold transition-all"
+                    >
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        <FilterIcon class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                        <select 
+                            v-model="statusFilter"
+                            class="pr-9 pl-4 py-2.5 rounded-2xl border-gray-100 bg-gray-50/50 focus:bg-white focus:ring-teal-500/20 focus:border-teal-500 text-xs font-black transition-all"
+                        >
+                            <option value="">كل الحالات</option>
+                            <option value="success">ناجح (Success)</option>
+                            <option value="partial">جزئي (Partial)</option>
+                            <option value="failed">فاشل (Failed)</option>
+                        </select>
+                    </div>
+
+                    <input 
+                        v-model="dateFilter"
+                        type="date" 
+                        class="px-4 py-2.5 rounded-2xl border-gray-100 bg-gray-50/50 focus:bg-white focus:ring-teal-500/20 focus:border-teal-500 text-xs font-black transition-all"
+                    >
                 </div>
             </div>
         </template>
