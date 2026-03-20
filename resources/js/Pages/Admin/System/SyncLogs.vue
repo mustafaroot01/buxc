@@ -10,8 +10,12 @@ import {
     SmartphoneIcon,
     ClockIcon,
     ArrowRightIcon,
-    BookOpenIcon
+    BookOpenIcon,
+    AlertCircleIcon
 } from 'lucide-vue-next';
+import Modal from '@/Components/Modal.vue';
+import DangerButton from '@/Components/DangerButton.vue';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { ref, watch } from 'vue';
@@ -77,6 +81,7 @@ const props = defineProps<{
 const searchTerm = ref(props.filters.search || '');
 const statusFilter = ref(props.filters.status || '');
 const dateFilter = ref(props.filters.date || '');
+const confirmingLogDeletion = ref(false);
 
 const applyFilters = () => {
     router.get(route('admin.system.sync-logs'), {
@@ -98,9 +103,17 @@ watch([searchTerm, statusFilter, dateFilter], () => {
 });
 
 const clearLogs = () => {
-    if (confirm('هل أنت متأكد من رغبتك في حذف السجلات التي مضى عليها أكثر من 30 يوماً؟ لا يمكن التراجع عن هذه العملية.')) {
-        router.delete(route('admin.system.sync-logs.clear-old'));
-    }
+    confirmingLogDeletion.value = true;
+};
+
+const deleteLogs = () => {
+    router.delete(route('admin.system.sync-logs.clear-old'), {
+        onSuccess: () => closeModal(),
+    });
+};
+
+const closeModal = () => {
+    confirmingLogDeletion.value = false;
 };
 
 const getStatusBadge = (status: string) => {
@@ -352,6 +365,38 @@ const formatDate = (date: string) => {
                 </div>
             </div>
         </div>
+
+        <!-- Confirmation Modal -->
+        <Modal :show="confirmingLogDeletion" @close="closeModal" maxWidth="md">
+            <div class="p-8">
+                <div class="flex items-center justify-center w-16 h-16 mx-auto mb-6 bg-rose-50 rounded-full text-rose-600">
+                    <AlertCircleIcon class="w-8 h-8" />
+                </div>
+                
+                <h3 class="text-xl font-black text-center text-gray-900 mb-2">تأكيد مسح السجلات</h3>
+                <p class="text-gray-500 text-center font-bold text-sm leading-relaxed mb-8">
+                    هل أنت متأكد من رغبتك في حذف **السجلات الحالية** بالكامل؟ 
+                    <br>
+                    <span class="text-rose-600">تنبيه: لا يمكن التراجع عن هذه العملية بعد التنفيذ.</span>
+                </p>
+
+                <div class="flex flex-col gap-3">
+                    <DangerButton 
+                        class="w-full justify-center py-4 rounded-2xl text-[15px] font-black shadow-lg shadow-rose-200" 
+                        @click="deleteLogs"
+                    >
+                        نعم، قم بالمسح الآن
+                    </DangerButton>
+                    
+                    <SecondaryButton 
+                        class="w-full justify-center py-4 rounded-2xl text-[15px] font-black border-none bg-gray-50 text-gray-500 hover:bg-gray-100" 
+                        @click="closeModal"
+                    >
+                        إلغاء العملية
+                    </SecondaryButton>
+                </div>
+            </div>
+        </Modal>
     </AuthenticatedLayout>
 </template>
 

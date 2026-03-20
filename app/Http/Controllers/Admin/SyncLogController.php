@@ -60,12 +60,11 @@ class SyncLogController extends Controller
 
     public function clearOldLogs()
     {
-        // Keep only last 30 days of logs by default
-        $date = Carbon::now()->subDays(30);
-        $count = AttendanceSyncLog::where('synced_at', '<', $date)->count();
-        AttendanceSyncLog::where('synced_at', '<', $date)->delete();
+        // Clear all current sync logs as requested by the user
+        $count = AttendanceSyncLog::count();
+        AttendanceSyncLog::truncate();
 
-        return back()->with('success', "تم تنظيف {$count} من السجلات القديمة بنجاح.");
+        return back()->with('success', "تم تصفير سجلات المزامنة بالكامل بنجاح ({$count} سجل).");
     }
 
     public function errors()
