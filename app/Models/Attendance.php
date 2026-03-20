@@ -11,7 +11,7 @@ use App\Traits\LogsArabicActivity;
 
 class Attendance extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes, LogsArabicActivity;
+    use HasFactory, HasUuids, SoftDeletes;
 
     protected $fillable = [
         'lecture_id',
