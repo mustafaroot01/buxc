@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { PlusIcon, SearchIcon, QrCodeIcon, Trash2Icon, AlertTriangleIcon } from 'lucide-vue-next';
+import { PlusIcon, SearchIcon, QrCodeIcon, Trash2Icon, AlertTriangleIcon, MoreVerticalIcon, EyeIcon, EditIcon } from 'lucide-vue-next';
 import Modal from '@/Components/Modal.vue';
 import DangerButton from '@/Components/DangerButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
+import Dropdown from '@/Components/Dropdown.vue';
 import QRCodeVue3 from 'qrcode-vue3';
 import { ref, watch, computed } from 'vue';
 import Pagination from '@/Components/Pagination.vue';
@@ -259,19 +260,35 @@ const confirmDeleteStudent = () => {
                                         <span v-else class="px-3 py-1 inline-flex text-xs font-bold rounded-lg bg-teal-50 text-teal-600 border border-indigo-100">مسائي</span>
                                     </td>
                                     <td class="px-6 py-5 whitespace-nowrap text-left text-sm font-medium">
-                                        <div class="flex items-center justify-end gap-2 opacity-100 lg:opacity-60 group-hover:opacity-100 transition-opacity">
-                                            <Link :href="route('admin.students.show', student.id)" class="px-4 py-2 text-xs font-bold text-teal-600 bg-teal-50 hover:bg-teal-100 rounded-xl transition-colors" title="الملف الشخصي">
-                                                عرض الملف
-                                            </Link>
-                                            <Link :href="route('admin.students.edit', student.id)" class="px-4 py-2 text-xs font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-xl transition-colors" title="تعديل البيانات">
-                                                تعديل
-                                            </Link>
-                                            <button @click="downloadQrCode(student.id, `${student.first_name}_${student.last_name}`)" class="flex items-center justify-center p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors" title="تنزيل رمز QR">
-                                                <QrCodeIcon class="w-4 h-4" :class="{'animate-pulse': downloadingQrFor === student.id}" /> 
-                                            </button>
-                                            <button @click="deleteStudent(student.id)" class="flex items-center justify-center p-2 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors" title="حذف الطالب">
-                                                <Trash2Icon class="w-4 h-4" />
-                                            </button>
+                                        <div class="flex items-center justify-end">
+                                            <Dropdown align="left" width="48">
+                                                <template #trigger>
+                                                    <button class="flex items-center justify-center p-2 text-gray-500 bg-gray-50 hover:bg-gray-200 hover:text-gray-900 rounded-xl transition-colors focus:outline-none border border-gray-100 shadow-sm" title="خيارات">
+                                                        <MoreVerticalIcon class="w-5 h-5" />
+                                                    </button>
+                                                </template>
+                                                <template #content>
+                                                    <div class="py-1 rtl:text-right">
+                                                        <Link :href="route('admin.students.show', student.id)" class="flex items-center gap-3 py-2.5 px-4 w-full hover:bg-teal-50 text-gray-700 hover:text-teal-700 transition duration-150 ease-in-out text-sm font-bold">
+                                                            <EyeIcon class="w-4 h-4 text-teal-600" />
+                                                            عرض الملف
+                                                        </Link>
+                                                        <Link :href="route('admin.students.edit', student.id)" class="flex items-center gap-3 py-2.5 px-4 w-full hover:bg-amber-50 text-gray-700 hover:text-amber-700 transition duration-150 ease-in-out text-sm font-bold">
+                                                            <EditIcon class="w-4 h-4 text-amber-600" />
+                                                            تعديل البيانات
+                                                        </Link>
+                                                        <button @click="downloadQrCode(student.id, `${student.first_name}_${student.last_name}`)" class="flex items-center gap-3 py-2.5 px-4 w-full text-right hover:bg-emerald-50 text-gray-700 hover:text-emerald-700 focus:outline-none transition duration-150 ease-in-out text-sm font-bold">
+                                                            <QrCodeIcon class="w-4 h-4 text-emerald-600" :class="{'animate-pulse': downloadingQrFor === student.id}" /> 
+                                                            تنزيل رمز QR
+                                                        </button>
+                                                        <div class="border-t border-gray-100 my-1"></div>
+                                                        <button @click="deleteStudent(student.id)" class="flex items-center gap-3 py-2.5 px-4 w-full text-right hover:bg-rose-50 text-rose-600 hover:text-rose-700 focus:outline-none transition duration-150 ease-in-out text-sm font-bold">
+                                                            <Trash2Icon class="w-4 h-4 text-rose-600" />
+                                                            حذف الطالب
+                                                        </button>
+                                                    </div>
+                                                </template>
+                                            </Dropdown>
                                             
                                             <!-- Hidden QR Code for downloading -->
                                             <div v-if="downloadingQrFor === student.id" :id="`qr-container-${student.id}`" class="hidden">
