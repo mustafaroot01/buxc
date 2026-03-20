@@ -47,6 +47,9 @@ class StudentController extends Controller
         }
 
         $students = $query->paginate(15)->withQueryString();
+        
+        // Make qr_payload visible for the list view so QR codes can be downloaded
+        $students->getCollection()->each->makeVisible('qr_payload');
 
         $stages = \App\Models\AcademicStage::with('groups')->get();
 
