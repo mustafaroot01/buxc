@@ -214,21 +214,21 @@ const confirmDeleteStudent = () => {
                         <table class="min-w-full divide-y divide-gray-100/60">
                             <thead class="bg-gray-50/50">
                                 <tr>
-                                    <th scope="col" class="px-6 py-5 text-right text-[12px] font-black text-gray-500 uppercase tracking-wider">#</th>
-                                    <th scope="col" class="px-6 py-5 text-right text-[12px] font-black text-gray-500 uppercase tracking-wider">اسم الطالب</th>
-                                    <th scope="col" class="px-6 py-5 text-center text-[12px] font-black text-gray-500 uppercase tracking-wider">ID</th>
-                                    <th scope="col" class="px-6 py-5 text-center text-[12px] font-black text-gray-500 uppercase tracking-wider">المرحلة</th>
-                                    <th scope="col" class="px-6 py-5 text-center text-[12px] font-black text-gray-500 uppercase tracking-wider">المجموعة</th>
-                                    <th scope="col" class="px-6 py-5 text-center text-[12px] font-black text-gray-500 uppercase tracking-wider">الدراسة</th>
-                                    <th scope="col" class="px-6 py-5 text-left text-[12px] font-black text-gray-500 uppercase tracking-wider">الإجراءات</th>
+                                    <th scope="col" class="px-6 py-3 text-right text-[12px] font-black text-gray-500 uppercase tracking-wider">#</th>
+                                    <th scope="col" class="px-6 py-3 text-right text-[12px] font-black text-gray-500 uppercase tracking-wider">اسم الطالب</th>
+                                    <th scope="col" class="px-6 py-3 text-center text-[12px] font-black text-gray-500 uppercase tracking-wider">ID</th>
+                                    <th scope="col" class="px-6 py-3 text-center text-[12px] font-black text-gray-500 uppercase tracking-wider">المرحلة</th>
+                                    <th scope="col" class="px-6 py-3 text-center text-[12px] font-black text-gray-500 uppercase tracking-wider">المجموعة</th>
+                                    <th scope="col" class="px-6 py-3 text-center text-[12px] font-black text-gray-500 uppercase tracking-wider">الدراسة</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-[12px] font-black text-gray-500 uppercase tracking-wider">الإجراءات</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-50/80">
                                 <tr v-for="(student, index) in students.data" :key="student.id" class="hover:bg-slate-50/50 transition-colors group">
-                                    <td class="px-6 py-5 whitespace-nowrap text-sm text-gray-400 font-bold">
+                                    <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-400 font-bold">
                                         {{ (Number(students.current_page) - 1) * Number(students.per_page) + Number(index) + 1 }}
                                     </td>
-                                    <td class="px-6 py-5 whitespace-nowrap">
+                                    <td class="px-6 py-3 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div v-if="student.photo_path" class="w-10 h-10 rounded-full ml-4 border border-gray-200 shadow-sm overflow-hidden flex-shrink-0 relative">
                                                 <img :src="'/storage/' + student.photo_path" class="w-full h-full object-cover bg-gray-100" />
@@ -249,19 +249,19 @@ const confirmDeleteStudent = () => {
                                             {{ student.student_external_id }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-5 whitespace-nowrap text-center text-sm text-gray-500 font-medium">
+                                    <td class="px-6 py-3 whitespace-nowrap text-center text-sm text-gray-500 font-medium">
                                         {{ student.group?.stage?.name }}
                                     </td>
-                                    <td class="px-6 py-5 whitespace-nowrap text-center text-[15px] text-gray-900 font-black">
+                                    <td class="px-6 py-3 whitespace-nowrap text-center text-[15px] text-gray-900 font-black">
                                         {{ student.group?.name }}
                                     </td>
-                                    <td class="px-6 py-5 whitespace-nowrap text-center">
+                                    <td class="px-6 py-3 whitespace-nowrap text-center">
                                         <span v-if="student.group?.study_type === 'morning'" class="px-3 py-1 inline-flex text-xs font-bold rounded-lg bg-amber-50 text-amber-600 border border-amber-100">صباحي</span>
                                         <span v-else class="px-3 py-1 inline-flex text-xs font-bold rounded-lg bg-teal-50 text-teal-600 border border-indigo-100">مسائي</span>
                                     </td>
-                                    <td class="px-6 py-5 whitespace-nowrap text-left text-sm font-medium">
+                                    <td class="px-6 py-3 whitespace-nowrap text-left text-sm font-medium">
                                         <div class="flex items-center justify-end">
-                                            <Dropdown align="left" width="48">
+                                            <Dropdown align="right" width="48">
                                                 <template #trigger>
                                                     <button class="flex items-center justify-center p-2 text-gray-500 bg-gray-50 hover:bg-gray-200 hover:text-gray-900 rounded-xl transition-colors focus:outline-none border border-gray-100 shadow-sm" title="خيارات">
                                                         <MoreVerticalIcon class="w-5 h-5" />
