@@ -62,7 +62,7 @@ const filterData = () => {
             study_type: study_type.value,
             is_banned: is_banned.value
         },
-        { preserveState: true, preserveScroll: true, replace: true }
+        { preserveState: true, preserveScroll: true, replace: true, only: ['students', 'filters'] }
     );
 };
 
@@ -269,11 +269,11 @@ const confirmDeleteStudent = () => {
                                                 </template>
                                                 <template #content>
                                                     <div class="py-1 rtl:text-right">
-                                                        <Link :href="route('admin.students.show', student.id)" class="flex items-center gap-3 py-2.5 px-4 w-full hover:bg-teal-50 text-gray-700 hover:text-teal-700 transition duration-150 ease-in-out text-sm font-bold">
+                                                        <Link :href="route('admin.students.show', student.id)" prefetch class="flex items-center gap-3 py-2.5 px-4 w-full hover:bg-teal-50 text-gray-700 hover:text-teal-700 transition duration-150 ease-in-out text-sm font-bold">
                                                             <EyeIcon class="w-4 h-4 text-teal-600" />
                                                             عرض الملف
                                                         </Link>
-                                                        <Link :href="route('admin.students.edit', student.id)" class="flex items-center gap-3 py-2.5 px-4 w-full hover:bg-amber-50 text-gray-700 hover:text-amber-700 transition duration-150 ease-in-out text-sm font-bold">
+                                                        <Link :href="route('admin.students.edit', student.id)" prefetch class="flex items-center gap-3 py-2.5 px-4 w-full hover:bg-amber-50 text-gray-700 hover:text-amber-700 transition duration-150 ease-in-out text-sm font-bold">
                                                             <EditIcon class="w-4 h-4 text-amber-600" />
                                                             تعديل البيانات
                                                         </Link>

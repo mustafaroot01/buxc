@@ -18,7 +18,7 @@ const applyFilters = (stageId: string = props.filters.stage_id || '') => {
   router.get(
     route('admin.subjects.index'),
     { search: props.filters.search, stage_id: stageId },
-    { preserveState: true, replace: true }
+    { preserveState: true, replace: true, only: ['stagesWithSubjects', 'filters'] }
   );
 };
 
@@ -189,7 +189,7 @@ const toggleStage = (id: number) => {
                                             </td>
                                             <td class="px-6 py-3 whitespace-nowrap text-center text-sm font-medium">
                                                 <div class="flex items-center justify-center gap-2">
-                                                    <Link :href="route('admin.subjects.edit', subject.id)" class="p-1.5 text-teal-600 bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors" title="تعديل">
+                                                    <Link :href="route('admin.subjects.edit', subject.id)" prefetch class="p-1.5 text-teal-600 bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors" title="تعديل">
                                                         <PencilIcon class="w-4 h-4" />
                                                     </Link>
                                                     <button @click="deleteSubject(subject)" class="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" title="حذف">

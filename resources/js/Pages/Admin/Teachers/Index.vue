@@ -5,10 +5,10 @@ import { PlusIcon, SearchIcon, UsersIcon, Trash2Icon, PencilIcon, AlertTriangleI
 import Modal from '@/Components/Modal.vue';
 import DangerButton from '@/Components/DangerButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import Pagination from '@/Components/Pagination.vue';
 
-defineProps<{
+const props = defineProps<{
     teachers: any;
     filters: { search?: string };
 }>();
@@ -64,6 +64,20 @@ const activateTeacher = (teacher: any) => {
 const restoreTeacher = (teacher: any) => {
     router.post(route('admin.teachers.restore', teacher.id));
 };
+
+const search = ref(props.filters.search || '');
+
+let searchTimeout: ReturnType<typeof setTimeout>;
+watch(search, (val) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        router.get(
+            route('admin.teachers.index'),
+            { search: val },
+            { preserveState: true, preserveScroll: true, replace: true, only: ['teachers', 'filters'] }
+        );
+    }, 300);
+});
 </script>
 
 <template>
@@ -86,16 +100,13 @@ const restoreTeacher = (teacher: any) => {
         <div class="py-12 bg-gray-50 min-h-screen">
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
                 <div class="mb-6 bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                    <form @submit.prevent="" class="flex items-center w-full max-w-2xl">
+                    <form @submit.prevent class="flex items-center w-full max-w-2xl">
                         <div class="relative w-full">
                             <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
                                 <SearchIcon class="w-5 h-5 text-gray-400" />
                             </div>
-                            <input type="text" name="search" :value="filters.search" class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 block w-full pr-12 p-3 transition-colors" placeholder="ابحث باسم الأستاذ أو البريد الإلكتروني...">
+                            <input type="text" v-model="search" class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 block w-full pr-12 p-3 transition-colors" placeholder="ابحث باسم الأستاذ أو البريد الإلكتروني...">
                         </div>
-                        <button type="submit" class="p-3 mr-3 text-sm font-medium text-emerald-600 bg-emerald-50 rounded-xl hover:bg-emerald-100 transition-colors">
-                            <SearchIcon class="w-5 h-5" />
-                        </button>
                     </form>
                 </div>
 
@@ -163,7 +174,7 @@ const restoreTeacher = (teacher: any) => {
                                             <button @click="revokeSessions(teacher)" class="p-2 text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors" title="إلغاء ارتباط الأجهزة (Revoke Sessions)">
                                                 <RefreshCcwIcon class="w-4 h-4" />
                                             </button>
-                                            <Link :href="route('admin.teachers.edit', teacher.id)" class="p-2 text-teal-600 bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors" title="تعديل">
+                                            <Link :href="route('admin.teachers.edit', teacher.id)" prefetch class="p-2 text-teal-600 bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors" title="تعديل">
                                                 <PencilIcon class="w-4 h-4" />
                                             </Link>
                                             <button @click="deleteTeacher(teacher)" class="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" :title="teacher.is_active ? 'تعطيل' : 'حذف نهائي'">

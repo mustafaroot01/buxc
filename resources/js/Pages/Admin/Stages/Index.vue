@@ -5,7 +5,7 @@ import { PlusIcon, SearchIcon, LayersIcon, Trash2Icon, AlertTriangleIcon } from 
 import Modal from '@/Components/Modal.vue';
 import DangerButton from '@/Components/DangerButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import Pagination from '@/Components/Pagination.vue';
 
 const props = defineProps<{
@@ -34,6 +34,20 @@ const confirmDeleteStage = () => {
         });
     }
 };
+
+const search = ref(props.filters.search || '');
+
+let searchTimeout: ReturnType<typeof setTimeout>;
+watch(search, (val) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        router.get(
+            route('admin.stages.index'),
+            { search: val },
+            { preserveState: true, preserveScroll: true, replace: true, only: ['stages', 'filters'] }
+        );
+    }, 300);
+});
 </script>
 
 <template>
@@ -58,17 +72,13 @@ const confirmDeleteStage = () => {
                 
                 <!-- Search and Filters Section -->
                 <div class="mb-6 bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                    <form @submit.prevent="" class="flex items-center w-full max-w-2xl">
+                    <form @submit.prevent class="flex items-center w-full max-w-2xl">
                         <div class="relative w-full">
                             <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
                                 <SearchIcon class="w-5 h-5 text-gray-400" />
                             </div>
-                            <input type="text" name="search" :value="filters.search" class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full pr-12 p-3 transition-colors" placeholder="ابحث عن مرحلة دراسية...">
+                            <input type="text" v-model="search" class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full pr-12 p-3 transition-colors" placeholder="ابحث عن مرحلة دراسية...">
                         </div>
-                        <button type="submit" class="p-3 mr-3 text-sm font-medium text-teal-600 bg-teal-50 rounded-xl hover:bg-teal-100 focus:ring-4 focus:outline-none focus:ring-indigo-300 transition-colors">
-                            <span class="sr-only">بحث</span>
-                            <SearchIcon class="w-5 h-5" />
-                        </button>
                     </form>
                 </div>
 
@@ -102,7 +112,7 @@ const confirmDeleteStage = () => {
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
                                         <div class="flex items-center justify-end space-x-3 space-x-reverse">
-                                            <Link :href="route('admin.stages.edit', stage.id)" class="p-2 text-teal-600 bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors" title="تعديل">
+                                            <Link :href="route('admin.stages.edit', stage.id)" prefetch class="p-2 text-teal-600 bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors" title="تعديل">
                                                 تعديل
                                             </Link>
                                             <button @click="deleteStage(stage)" class="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" title="حذف">

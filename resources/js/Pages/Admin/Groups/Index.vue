@@ -5,7 +5,7 @@ import { PlusIcon, SearchIcon, UsersIcon, LayersIcon, ChevronDownIcon, ChevronUp
 import Modal from '@/Components/Modal.vue';
 import DangerButton from '@/Components/DangerButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import Pagination from '@/Components/Pagination.vue';
 
 const props = defineProps<{
@@ -52,6 +52,20 @@ const confirmDeleteGroup = () => {
         });
     }
 };
+
+const search = ref(props.filters.search || '');
+
+let searchTimeout: ReturnType<typeof setTimeout>;
+watch(search, (val) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        router.get(
+            route('admin.groups.index'),
+            { search: val },
+            { preserveState: true, preserveScroll: true, replace: true, only: ['stages', 'filters'] }
+        );
+    }, 300);
+});
 </script>
 
 <template>
@@ -74,16 +88,13 @@ const confirmDeleteGroup = () => {
 
                 <!-- Search -->
                 <div class="mb-6 bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                    <form @submit.prevent="" class="flex items-center w-full max-w-2xl">
+                    <form @submit.prevent class="flex items-center w-full max-w-2xl">
                         <div class="relative w-full">
                             <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
                                 <SearchIcon class="w-5 h-5 text-gray-400" />
                             </div>
-                            <input type="text" name="search" :value="filters.search" class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full pr-12 p-3" placeholder="ابحث باسم المجموعة...">
+                            <input type="text" v-model="search" class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full pr-12 p-3" placeholder="ابحث باسم المجموعة...">
                         </div>
-                        <button type="submit" class="p-3 mr-3 text-blue-600 bg-teal-50 rounded-xl hover:bg-teal-100 transition-colors">
-                            <SearchIcon class="w-5 h-5" />
-                        </button>
                     </form>
                 </div>
 
@@ -159,7 +170,7 @@ const confirmDeleteGroup = () => {
                                             </td>
                                             <td class="px-5 py-3 text-left">
                                                 <div class="flex items-center justify-end gap-2">
-                                                    <Link :href="route('admin.groups.edit', group.id)" class="p-1.5 text-teal-600 bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors">
+                                                    <Link :href="route('admin.groups.edit', group.id)" prefetch class="p-1.5 text-teal-600 bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors">
                                                         <PencilIcon class="w-4 h-4" />
                                                     </Link>
                                                     <button @click="deleteGroup(group)" class="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">

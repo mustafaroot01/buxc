@@ -17,4 +17,15 @@ export default defineConfig({
             },
         }),
     ],
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    'vue-core':     ['vue', '@inertiajs/vue3'],
+                    'lucide-icons': ['lucide-vue-next'],
+                    'headlessui':   ['@headlessui/vue'],
+                },
+            },
+        },
+    },
 });
