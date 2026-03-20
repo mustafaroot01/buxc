@@ -14,7 +14,9 @@ class SyncLogController extends Controller
 {
     public function index(Request $request)
     {
-        $query = AttendanceSyncLog::with(['lecture.subject']);
+        $query = AttendanceSyncLog::with(['lecture' => function($query) {
+            $query->withTrashed()->with(['subject', 'teacher']);
+        }]);
 
         $logs = $query->latest()
             ->paginate(20)

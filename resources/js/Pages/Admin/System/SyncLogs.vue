@@ -37,8 +37,12 @@ const props = defineProps<{
             lecture?: {
                 id: string;
                 title: string;
+                deleted_at: string | null;
                 subject?: {
                     name: string;
+                },
+                teacher?: {
+                    full_name: string;
                 }
             }
         }>;
@@ -187,11 +191,24 @@ const formatDate = (date: string) => {
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex flex-col">
-                                            <div class="text-sm font-black text-gray-900 flex items-center gap-1">
-                                                <BookOpenIcon class="w-3.5 h-3.5 text-teal-600" />
-                                                {{ log.lecture?.title || 'محاضرة غير معروفة' }}
+                                            <div class="text-[14px] font-black text-gray-900 flex items-center gap-1.5">
+                                                <BookOpenIcon class="w-4 h-4 text-teal-600" />
+                                                <template v-if="log.lecture">
+                                                    {{ log.lecture.title }}
+                                                    <span v-if="log.lecture.deleted_at" class="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded border border-gray-200 font-bold">محذوفة</span>
+                                                </template>
+                                                <span v-else class="text-rose-600">محاضرة غير معروفة</span>
                                             </div>
-                                            <div class="text-[10px] text-gray-400 font-mono mt-0.5">{{ log.sync_id }}</div>
+                                            <div class="flex items-center gap-2 mt-1">
+                                                <span class="text-[11px] text-gray-500 font-bold" v-if="log.lecture?.subject">
+                                                    المادة: {{ log.lecture.subject.name }}
+                                                </span>
+                                                <span class="text-[11px] text-gray-400">|</span>
+                                                <span class="text-[11px] text-indigo-600 font-bold" v-if="log.lecture?.teacher">
+                                                    المدرس: {{ log.lecture.teacher.full_name }}
+                                                </span>
+                                            </div>
+                                            <div class="text-[9px] text-gray-400 font-mono mt-1 opacity-60">ID: {{ log.sync_id }}</div>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
