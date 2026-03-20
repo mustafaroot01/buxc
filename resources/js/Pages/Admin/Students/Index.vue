@@ -244,7 +244,7 @@ const confirmDeleteStudent = () => {
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-5 whitespace-nowrap text-center">
+                                    <td class="px-6 py-3 whitespace-nowrap text-center">
                                         <span class="px-3 py-1 inline-flex text-xs font-bold rounded-lg bg-gray-50 text-gray-600 border border-gray-200">
                                             {{ student.student_external_id }}
                                         </span>
