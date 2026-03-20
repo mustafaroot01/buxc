@@ -76,6 +76,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Reports & Exporting
         Route::get('/reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
+        Route::post('/reports/import-students', [\App\Http\Controllers\Admin\ReportController::class, 'importStudents'])->name('reports.import-students');
+        Route::get('/reports/export-students', [\App\Http\Controllers\Admin\ReportController::class, 'exportStudents'])->name('reports.export-students');
         Route::get('/reports/export', [\App\Http\Controllers\Admin\ReportController::class, 'export'])->name('reports.export');
         Route::get('/reports/download_export/{file}', [\App\Http\Controllers\Admin\ReportController::class, 'downloadExport'])->name('reports.download_export');
 

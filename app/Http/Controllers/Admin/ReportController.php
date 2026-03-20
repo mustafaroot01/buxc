@@ -37,7 +37,34 @@ class ReportController extends Controller
         $date = Carbon::now()->format('Y-m-d_H-i');
         $fileName = "attendance_report_{$date}.xlsx";
 
-        return Excel::download(new AttendanceExport($filters), $fileName);
+        return Excel::download(new \App\Exports\AttendanceExport($filters), $fileName);
+    }
+
+    public function importStudents(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv',
+            'group_id' => 'required|exists:academic_groups,id',
+            'study_type' => 'required|in:morning,evening',
+        ]);
+
+        Excel::import(new \App\Imports\StudentImport($request->group_id, $request->study_type), $request->file('file'));
+
+        return back()->with('success', 'تم استيراد قائمة الطلاب بنجاح.');
+    }
+
+    public function exportStudents(Request $request)
+    {
+        $filters = $request->validate([
+            'stage_id' => 'nullable|exists:academic_stages,id',
+            'group_id' => 'nullable|exists:academic_groups,id',
+            'study_type' => 'nullable|in:morning,evening',
+        ]);
+
+        $date = Carbon::now()->format('Y-m-d');
+        $fileName = "students_list_{$date}.xlsx";
+
+        return Excel::download(new \App\Exports\StudentExport($filters), $fileName);
     }
 
     public function downloadExport($file)
